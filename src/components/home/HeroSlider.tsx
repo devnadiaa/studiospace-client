@@ -52,15 +52,15 @@ const HeroSlider = () => {
   return (
     <section className="overflow-hidden bg-gray-950">
       <div
-        className="relative flex min-h-[400px] items-center bg-cover bg-center px-6 py-16 sm:min-h-[440px] lg:min-h-[480px]"
+        className="relative flex min-h-[400px] items-center justify-center bg-cover bg-center px-6 py-16 text-center sm:min-h-[440px] lg:min-h-[480px]"
         style={{
           backgroundImage: `url("${slides[currentSlide].image}")`,
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/65 to-black/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/60 to-black/75"></div>
 
         <div className="relative mx-auto w-full max-w-7xl">
-          <div className="max-w-2xl">
+          <div className="mx-auto max-w-3xl">
             <p className="mb-5 inline-block rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-medium tracking-wide text-white sm:text-sm">
               {slides[currentSlide].subtitle}
             </p>
@@ -69,11 +69,11 @@ const HeroSlider = () => {
               {slides[currentSlide].title}
             </h1>
 
-            <p className="mt-4 max-w-xl text-sm leading-7 text-gray-200 sm:text-base">
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-gray-200 sm:text-base">
               {slides[currentSlide].description}
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
               <Link
                 href="/studios"
                 className="rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-700"
