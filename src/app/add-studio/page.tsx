@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { toast } from "react-toastify";
 import {
   ArrowLeft,
   MapPin,
@@ -49,17 +50,27 @@ const AddStudioPage = () => {
       hostEmail: formData.get("hostEmail"),
     };
 
-    const response = await fetch("http://localhost:5000/studios", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(studioData),
-    });
+    try {
+      const response = await fetch("http://localhost:5000/studios", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(studioData),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    console.log(data);
+      if (!response.ok) {
+        toast.error(data.message || "Failed to publish studio.");
+        return;
+      }
+
+      toast.success("Studio published successfully!");
+      form.reset();
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+    }
   };
 
   return (

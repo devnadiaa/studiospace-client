@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import {
   ArrowLeft,
   Building2,
@@ -59,7 +60,7 @@ const EditStudioPage = () => {
 
         if (!response.ok) {
           setMessage("Studio not found.");
-          setLoading(false);
+          toast.error("Studio not found.");
           return;
         }
 
@@ -67,6 +68,7 @@ const EditStudioPage = () => {
         setStudio(data);
       } catch (error) {
         setMessage("Failed to load studio.");
+        toast.error("Failed to load studio.");
       } finally {
         setLoading(false);
       }
@@ -117,16 +119,16 @@ const EditStudioPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.message || "Failed to update studio.");
+        toast.error(data.message || "Failed to update studio.");
         return;
       }
 
-      setMessage("Studio updated successfully!");
+      toast.success("Studio updated successfully!");
 
       router.push("/my-listings");
       router.refresh();
     } catch (error) {
-      setMessage("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setUpdating(false);
     }
@@ -464,10 +466,6 @@ const EditStudioPage = () => {
               </div>
             </div>
           </div>
-
-          {message && (
-            <p className="text-center text-sm text-red-500">{message}</p>
-          )}
 
           <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
             <Link
