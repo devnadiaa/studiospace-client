@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Building2,
@@ -7,7 +11,6 @@ import {
   Users,
   Image,
   CheckCircle,
-  Plus,
 } from "lucide-react";
 
 const amenities = [
@@ -21,7 +24,138 @@ const amenities = [
   "Changing Room",
 ];
 
+interface Studio {
+  _id: string;
+  title: string;
+  category: string;
+  capacity: number;
+  overview: string;
+  hourlyRate: number;
+  securityDeposit: number;
+  address: string;
+  city: string;
+  country: string;
+  imageUrl: string;
+  amenities: string[];
+  hostName: string;
+  hostEmail: string;
+}
+
 const EditStudioPage = () => {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+
+  const [studio, setStudio] = useState<Studio | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const fetchStudio = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/studios/${id}`,
+        );
+
+        if (!response.ok) {
+          setMessage("Studio not found.");
+          setLoading(false);
+          return;
+        }
+
+        const data = await response.json();
+        setStudio(data);
+      } catch (error) {
+        setMessage("Failed to load studio.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudio();
+  }, [id]);
+
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!studio) {
+      return;
+    }
+
+    setUpdating(true);
+    setMessage("");
+
+    const formData = new FormData(e.currentTarget);
+
+    const updatedStudio = {
+      title: formData.get("title"),
+      category: formData.get("category"),
+      capacity: Number(formData.get("capacity")),
+      overview: formData.get("overview"),
+      hourlyRate: Number(formData.get("hourlyRate")),
+      securityDeposit: Number(formData.get("securityDeposit")),
+      address: formData.get("address"),
+      city: formData.get("city"),
+      country: formData.get("country"),
+      imageUrl: formData.get("imageUrl"),
+      amenities: formData.getAll("amenities"),
+      hostEmail: studio.hostEmail,
+    };
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/studios/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedStudio),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message || "Failed to update studio.");
+        return;
+      }
+
+      setMessage("Studio updated successfully!");
+
+      router.push("/my-listings");
+      router.refresh();
+    } catch (error) {
+      setMessage("Something went wrong. Please try again.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 text-gray-600 dark:bg-gray-950 dark:text-gray-300">
+        Loading studio...
+      </div>
+    );
+  }
+
+  if (!studio) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 dark:bg-gray-950">
+        <p className="text-gray-600 dark:text-gray-300">
+          {message || "Studio not found."}
+        </p>
+        <Link
+          href="/my-listings"
+          className="rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white"
+        >
+          Back to My Listings
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <section className="min-h-screen bg-gray-50 px-6 py-12 dark:bg-gray-950">
       <div className="mx-auto max-w-4xl">
@@ -47,7 +181,7 @@ const EditStudioPage = () => {
           </p>
         </div>
 
-        <form className="space-y-8">
+        <form onSubmit={handleUpdate} className="space-y-8">
           <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-800 dark:bg-gray-900">
             <div className="mb-6 flex items-center gap-3">
               <div className="rounded-xl bg-violet-50 p-3 dark:bg-violet-500/10">
@@ -71,7 +205,9 @@ const EditStudioPage = () => {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Modern Photography Studio"
+                  name="title"
+                  defaultValue={studio.title}
+                  required
                   className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none transition focus:border-violet-500 dark:border-gray-700 dark:text-white"
                 />
               </div>
@@ -82,14 +218,16 @@ const EditStudioPage = () => {
                     Studio Category
                   </label>
                   <select
-                    defaultValue="Photo Studios"
+                    name="category"
+                    defaultValue={studio.category}
                     className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
                   >
-                    <option>Photo Studios</option>
-                    <option>Sound Stages</option>
-                    <option>Podcast Rooms</option>
-                    <option>Music Suites</option>
-                    <option>Art Workshops</option>
+                    <option>Photo Studio</option>
+                    <option>Film Stage</option>
+                    <option>Podcast Lounge</option>
+                    <option>Music Suite</option>
+                    <option>Workshop</option>
+                    <option>Sound Stage</option>
                   </select>
                 </div>
 
@@ -104,7 +242,9 @@ const EditStudioPage = () => {
                     />
                     <input
                       type="number"
-                      defaultValue="10"
+                      name="capacity"
+                      defaultValue={studio.capacity}
+                      required
                       className="h-12 w-full rounded-xl border border-gray-200 bg-transparent pl-11 pr-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
                     />
                   </div>
@@ -116,8 +256,10 @@ const EditStudioPage = () => {
                   Detailed Overview
                 </label>
                 <textarea
+                  name="overview"
                   rows={5}
-                  defaultValue="A beautiful and professional creative space designed for photographers, content creators, and creative professionals."
+                  defaultValue={studio.overview}
+                  required
                   className="w-full rounded-xl border border-gray-200 bg-transparent p-4 text-sm outline-none transition focus:border-violet-500 dark:border-gray-700 dark:text-white"
                 ></textarea>
               </div>
@@ -147,7 +289,9 @@ const EditStudioPage = () => {
                 </label>
                 <input
                   type="number"
-                  defaultValue="45"
+                  name="hourlyRate"
+                  defaultValue={studio.hourlyRate}
+                  required
                   className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
                 />
               </div>
@@ -158,7 +302,9 @@ const EditStudioPage = () => {
                 </label>
                 <input
                   type="number"
-                  defaultValue="100"
+                  name="securityDeposit"
+                  defaultValue={studio.securityDeposit}
+                  required
                   className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
                 />
               </div>
@@ -188,7 +334,9 @@ const EditStudioPage = () => {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Gulshan, Dhaka, Bangladesh"
+                  name="address"
+                  defaultValue={studio.address}
+                  required
                   className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
                 />
               </div>
@@ -200,7 +348,9 @@ const EditStudioPage = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Dhaka"
+                    name="city"
+                    defaultValue={studio.city}
+                    required
                     className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
                   />
                 </div>
@@ -211,7 +361,9 @@ const EditStudioPage = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Bangladesh"
+                    name="country"
+                    defaultValue={studio.country}
+                    required
                     className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
                   />
                 </div>
@@ -240,7 +392,9 @@ const EditStudioPage = () => {
             </label>
             <input
               type="url"
-              defaultValue="https://images.unsplash.com/photo-1497366754035-f200968a6e72"
+              name="imageUrl"
+              defaultValue={studio.imageUrl}
+              required
               className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
             />
           </div>
@@ -263,11 +417,9 @@ const EditStudioPage = () => {
                 >
                   <input
                     type="checkbox"
-                    defaultChecked={[
-                      "Professional Lighting",
-                      "High-Speed Wi-Fi",
-                      "Air Conditioning",
-                    ].includes(amenity)}
+                    name="amenities"
+                    value={amenity}
+                    defaultChecked={studio.amenities?.includes(amenity)}
                     className="h-4 w-4 accent-violet-600"
                   />
                   {amenity}
@@ -293,7 +445,7 @@ const EditStudioPage = () => {
                 </label>
                 <input
                   type="text"
-                  value="Studio Host"
+                  value={studio.hostName}
                   readOnly
                   className="h-12 w-full rounded-xl border border-gray-200 bg-gray-100 px-4 text-sm text-gray-500 outline-none dark:border-gray-700 dark:bg-gray-800"
                 />
@@ -305,13 +457,17 @@ const EditStudioPage = () => {
                 </label>
                 <input
                   type="email"
-                  value="host@example.com"
+                  value={studio.hostEmail}
                   readOnly
                   className="h-12 w-full rounded-xl border border-gray-200 bg-gray-100 px-4 text-sm text-gray-500 outline-none dark:border-gray-700 dark:bg-gray-800"
                 />
               </div>
             </div>
           </div>
+
+          {message && (
+            <p className="text-center text-sm text-red-500">{message}</p>
+          )}
 
           <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
             <Link
@@ -323,10 +479,11 @@ const EditStudioPage = () => {
 
             <button
               type="submit"
-              className="flex h-12 items-center justify-center gap-2 rounded-xl bg-violet-600 px-8 text-sm font-semibold text-white transition hover:bg-violet-700"
+              disabled={updating}
+              className="flex h-12 items-center justify-center gap-2 rounded-xl bg-violet-600 px-8 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <CheckCircle size={18} />
-              Update Studio
+              {updating ? "Updating..." : "Update Studio"}
             </button>
           </div>
         </form>
