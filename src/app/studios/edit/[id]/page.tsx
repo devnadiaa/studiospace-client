@@ -106,7 +106,7 @@ const EditStudioPage = () => {
       const response = await fetch(
         `http://localhost:5000/studios/${id}`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },

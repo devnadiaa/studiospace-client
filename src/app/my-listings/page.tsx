@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import {
   Plus,
   MapPin,
@@ -6,22 +10,109 @@ import {
   Trash2,
   Building2,
   ArrowRight,
+  X,
 } from "lucide-react";
 
-const MyListingsPage = async () => {
-  const response = await fetch("http://localhost:5000/studios", {
-    cache: "no-store",
-  });
+interface Studio {
+  _id: string;
+  title: string;
+  category: string;
+  imageUrl: string;
+  address: string;
+  city: string;
+  country: string;
+  hourlyRate: number;
+  hostEmail: string;
+}
 
-  const allStudios = await response.json();
+const MyListingsPage = () => {
+  const [studios, setStudios] = useState<Studio[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedStudio, setSelectedStudio] = useState<Studio | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const studios = allStudios.filter(
-    (studio: any) => studio.hostEmail === "user@example.com",
-  );
+  useEffect(() => {
+    const fetchStudios = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/studios", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to load studio listings.");
+        }
+
+        const allStudios = await response.json();
+
+        const myStudios = allStudios.filter(
+          (studio: Studio) => studio.hostEmail === "user@example.com",
+        );
+
+        setStudios(myStudios);
+      } catch (error) {
+        toast.error("Failed to load studio listings.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudios();
+  }, []);
+
+  const handleDelete = async () => {
+    if (!selectedStudio) {
+      return;
+    }
+
+    setDeleting(true);
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/studios/${selectedStudio._id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            hostEmail: selectedStudio.hostEmail,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || "Failed to delete studio.");
+        return;
+      }
+
+      setStudios((previousStudios) =>
+        previousStudios.filter(
+          (studio) => studio._id !== selectedStudio._id,
+        ),
+      );
+
+      setSelectedStudio(null);
+      toast.success("Studio deleted successfully!");
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const totalListings = studios.length;
   const availableStudios = studios.length;
   const bookedStudios = 0;
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 text-gray-600 dark:bg-gray-950 dark:text-gray-300">
+        Loading your listings...
+      </div>
+    );
+  }
 
   return (
     <section className="min-h-screen bg-gray-50 px-6 py-12 dark:bg-gray-950">
@@ -106,10 +197,7 @@ const MyListingsPage = async () => {
 
         {studios.length === 0 ? (
           <div className="rounded-2xl border border-gray-100 bg-white px-6 py-16 text-center dark:border-gray-800 dark:bg-gray-900">
-            <Building2
-              size={40}
-              className="mx-auto text-gray-400"
-            />
+            <Building2 size={40} className="mx-auto text-gray-400" />
 
             <h3 className="mt-4 text-xl font-bold text-gray-900 dark:text-white">
               No Studio Listings Yet
@@ -129,7 +217,7 @@ const MyListingsPage = async () => {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {studios.map((studio: any) => (
+            {studios.map((studio) => (
               <div
                 key={studio._id}
                 className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900"
@@ -179,6 +267,7 @@ const MyListingsPage = async () => {
 
                   <button
                     type="button"
+                    onClick={() => setSelectedStudio(studio)}
                     className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 py-2.5 text-sm font-semibold text-red-500 transition hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/30"
                   >
                     <Trash2 size={16} />
@@ -213,6 +302,55 @@ const MyListingsPage = async () => {
           </div>
         </div>
       </div>
+
+      {selectedStudio && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Delete Studio
+              </h2>
+
+              <button
+                type="button"
+                onClick={() => setSelectedStudio(null)}
+                disabled={deleting}
+                className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p className="text-sm leading-6 text-gray-600 dark:text-gray-300">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {selectedStudio.title}
+              </span>
+              ? This action cannot be undone.
+            </p>
+
+            <div className="mt-7 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectedStudio(null)}
+                disabled={deleting}
+                className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deleting ? "Deleting..." : "Confirm Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
