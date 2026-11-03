@@ -1,6 +1,22 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "i.ibb.co",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.pexels.com",
+      },
+    ],
+  },
   turbopack: {
     rules: {
       "*.css": {
@@ -9,7 +25,6 @@ const nextConfig: NextConfig = {
       },
     },
   },
-
   async rewrites() {
     const backendUrl = (
       process.env.BACKEND_URL || "http://localhost:5000"

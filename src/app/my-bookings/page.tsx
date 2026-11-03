@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   CalendarDays,
   Clock3,
@@ -11,13 +10,11 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { authClient } from "@/lib/auth-client";
 
 type Booking = {
   _id: string;
   studioId: string;
   customerEmail: string;
-  customerName?: string;
   bookingDate: string;
   startTime: string;
   endTime: string;
@@ -39,61 +36,31 @@ type BookingWithStudio = Booking & {
   studio: Studio | null;
 };
 
-const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
-).replace(/\/$/, "");
-
 const MyBookingsPage = () => {
-  const router = useRouter();
-
-  const { data: session, isPending: isSessionPending } =
-    authClient.useSession();
-
-  const user = session?.user;
-
   const [bookings, setBookings] = useState<BookingWithStudio[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isSessionPending) {
-      return;
-    }
-
-    if (!user) {
-      setBookings([]);
-      setIsLoading(false);
-      router.replace("/login");
-      return;
-    }
-
-    let isMounted = true;
-
     const fetchBookings = async () => {
-      setIsLoading(true);
-
       try {
-        const response = await fetch(`${API_URL}/bookings`, {
+        const response = await fetch("http://localhost:5000/bookings", {
           credentials: "include",
-          cache: "no-store",
         });
 
-        const data = await response.json();
-
         if (response.ok === false) {
-          throw new Error(data.message || "Failed to load bookings");
+          throw new Error("Failed to load bookings");
         }
 
-        const userBookings: Booking[] = data;
+        const data: Booking[] = await response.json();
 
         const bookingsWithStudios = await Promise.all(
-          userBookings.map(async (booking) => {
+          data.map(async (booking) => {
             try {
               const studioResponse = await fetch(
-                `${API_URL}/studios/${booking.studioId}`,
+                `http://localhost:5000/studios/${booking.studioId}`,
                 {
                   credentials: "include",
-                  cache: "no-store",
                 },
               );
 
@@ -119,37 +86,23 @@ const MyBookingsPage = () => {
           }),
         );
 
-        if (isMounted) {
-          setBookings(bookingsWithStudios);
-        }
-      } catch (error) {
-        if (isMounted) {
-          toast.error(
-            error instanceof Error
-              ? error.message
-              : "Failed to load bookings",
-          );
-        }
+        setBookings(bookingsWithStudios);
+      } catch {
+        toast.error("Failed to load bookings");
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
     fetchBookings();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isSessionPending, user?.id, router]);
+  }, []);
 
   const handleCancelBooking = async (bookingId: string) => {
     setCancellingId(bookingId);
 
     try {
       const response = await fetch(
-        `${API_URL}/bookings/${bookingId}/cancel`,
+        `http://localhost:5000/bookings/${bookingId}/cancel`,
         {
           method: "PATCH",
           credentials: "include",
@@ -204,10 +157,6 @@ const MyBookingsPage = () => {
     });
   };
 
-  const formatStatus = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-  };
-
   const getStatusStyle = (status: string) => {
     switch (status.toLowerCase()) {
       case "pending":
@@ -218,6 +167,8 @@ const MyBookingsPage = () => {
         return "bg-green-50 text-green-600 dark:bg-green-950/40";
       case "cancelled":
         return "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300";
+      case "rejected":
+        return "bg-red-50 text-red-600 dark:bg-red-950/40";
       default:
         return "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300";
     }
@@ -237,6 +188,10 @@ const MyBookingsPage = () => {
 
   const cancelledCount = bookings.filter(
     (booking) => booking.status.toLowerCase() === "cancelled",
+  ).length;
+
+  const rejectedCount = bookings.filter(
+    (booking) => booking.status.toLowerCase() === "rejected",
   ).length;
 
   return (
@@ -266,7 +221,7 @@ const MyBookingsPage = () => {
           </Link>
         </div>
 
-        <div className="mb-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mb-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {[
             {
               label: "Total Bookings",
@@ -292,6 +247,11 @@ const MyBookingsPage = () => {
               label: "Cancelled",
               count: cancelledCount,
               color: "text-gray-500",
+            },
+            {
+              label: "Rejected",
+              count: rejectedCount,
+              color: "text-red-500",
             },
           ].map((item) => (
             <div
@@ -365,7 +325,7 @@ const MyBookingsPage = () => {
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(booking.status)}`}
                         >
-                          {formatStatus(booking.status)}
+                          {booking.status}
                         </span>
                       </div>
 

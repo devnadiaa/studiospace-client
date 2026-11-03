@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
@@ -14,6 +15,7 @@ import {
   DollarSign,
   Users,
   Image as ImageIcon,
+  X,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
@@ -34,14 +36,18 @@ const API_URL = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 ).replace(/\/$/, "");
 
+const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+const MAX_IMAGES = 6;
+
 const AddStudioPage = () => {
   const router = useRouter();
-
   const { data: session, isPending } = authClient.useSession();
-
   const user = session?.user;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     if (isPending) {
@@ -50,16 +56,105 @@ const AddStudioPage = () => {
 
     if (user === undefined || user === null) {
       toast.info("Please login to publish a studio.");
-      router.replace("/login");
+      router.replace("/login?callbackURL=%2Fadd-studio");
     }
   }, [isPending, user?.id, router]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, [previewUrls]);
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+
+    if (files.length === 0) {
+      return;
+    }
+
+    if (selectedFiles.length + files.length > MAX_IMAGES) {
+      toast.error(`You can upload a maximum of ${MAX_IMAGES} images.`);
+      e.target.value = "";
+      return;
+    }
+
+    const invalidFile = files.find(
+      (file) =>
+        file.type !== "image/png" && file.type !== "image/jpeg"
+    );
+
+    if (invalidFile) {
+      toast.error("Please select PNG, JPG or JPEG images.");
+      e.target.value = "";
+      return;
+    }
+
+    const oversizedFile = files.find(
+      (file) => file.size > 32 * 1024 * 1024
+    );
+
+    if (oversizedFile) {
+      toast.error("Each image must be less than 32 MB.");
+      e.target.value = "";
+      return;
+    }
+
+    const newPreviewUrls = files.map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    setSelectedFiles((previous) => [...previous, ...files]);
+    setPreviewUrls((previous) => [...previous, ...newPreviewUrls]);
+
+    e.target.value = "";
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setSelectedFiles((previous) =>
+      previous.filter((_, i) => i !== index)
+    );
+
+    setPreviewUrls((previous) =>
+      previous.filter((_, i) => i !== index)
+    );
+  };
+
+  const uploadImage = async (file: File) => {
+    if (!IMGBB_API_KEY) {
+      throw new Error("ImgBB API key is missing.");
+    }
+
+    const uploadData = new FormData();
+    uploadData.append("image", file);
+
+    const response = await fetch(
+      `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,
+      {
+        method: "POST",
+        body: uploadData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || data.success !== true) {
+      throw new Error(
+        data.error?.message || "Image upload failed."
+      );
+    }
+
+    return data.data.url as string;
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (user === undefined || user === null) {
+    if (!user) {
       toast.error("Please login to publish a studio.");
-      router.push("/login");
+      router.push("/login?callbackURL=%2Fadd-studio");
       return;
     }
 
@@ -76,18 +171,16 @@ const AddStudioPage = () => {
       address: String(formData.get("address") || "").trim(),
       city: String(formData.get("city") || "").trim(),
       country: String(formData.get("country") || "").trim(),
-      imageUrl: String(formData.get("imageUrl") || "").trim(),
       amenities: formData.getAll("amenities"),
     };
 
     if (
-      studioData.title === "" ||
-      studioData.category === "" ||
-      studioData.overview === "" ||
-      studioData.address === "" ||
-      studioData.city === "" ||
-      studioData.country === "" ||
-      studioData.imageUrl === ""
+      !studioData.title ||
+      !studioData.category ||
+      !studioData.overview ||
+      !studioData.address ||
+      !studioData.city ||
+      !studioData.country
     ) {
       toast.error("Please fill in all required fields.");
       return;
@@ -102,21 +195,45 @@ const AddStudioPage = () => {
       return;
     }
 
+    if (selectedFiles.length === 0 && !imageUrl.trim()) {
+      toast.error("Please provide an image URL or upload images.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      let uploadedImages: string[] = [];
+
+      if (selectedFiles.length > 0) {
+        toast.info("Uploading studio images...");
+
+        uploadedImages = await Promise.all(
+          selectedFiles.map((file) => uploadImage(file))
+        );
+      }
+
+      const allImages = [
+        imageUrl.trim(),
+        ...uploadedImages,
+      ].filter(Boolean);
+
       const response = await fetch(`${API_URL}/studios`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(studioData),
+        body: JSON.stringify({
+          ...studioData,
+          imageUrl: allImages[0],
+          images: allImages,
+        }),
       });
 
       const data = await response.json();
 
-      if (response.ok === false) {
+      if (!response.ok) {
         toast.error(data.message || "Failed to publish studio.");
         return;
       }
@@ -124,17 +241,24 @@ const AddStudioPage = () => {
       toast.success("Studio published successfully!");
 
       form.reset();
+      setSelectedFiles([]);
+      setPreviewUrls([]);
+      setImageUrl("");
 
       router.push("/my-listings");
       router.refresh();
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isPending || user === undefined || user === null) {
+  if (isPending || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 text-gray-600 dark:bg-gray-950 dark:text-gray-300">
         Loading your account...
@@ -386,44 +510,105 @@ const AddStudioPage = () => {
                 </div>
 
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Studio Image
+                  Studio Images
                 </h2>
               </div>
 
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Add a photo URL to showcase your creative space.
+                Upload up to 6 photos of your creative space.
+                PNG, JPG or JPEG. Maximum 32 MB per image.
               </p>
             </div>
 
-            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Image URL
-            </label>
-
-            <input
-              type="url"
-              name="imageUrl"
-              placeholder="Paste your studio image URL here"
-              required
-              className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none transition focus:border-violet-500 dark:border-gray-700 dark:text-white"
-            />
-
-            <label className="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 px-6 py-8 text-center transition hover:border-violet-400 dark:border-gray-700 dark:bg-gray-800/50">
-              <UploadCloud size={30} className="mb-3 text-violet-600" />
-
-              <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                Choose an image to upload
-              </p>
-
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                PNG, JPG or JPEG
-              </p>
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Image URL (Optional)
+              </label>
 
               <input
-                type="file"
-                accept="image/*"
-                className="hidden"
+                type="url"
+                name="imageUrl"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="Paste a studio image URL here"
+                className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none transition focus:border-violet-500 dark:border-gray-700 dark:text-white"
               />
-            </label>
+            </div>
+
+            {selectedFiles.length < MAX_IMAGES && (
+              <label className="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 px-6 py-8 text-center transition hover:border-violet-400 dark:border-gray-700 dark:bg-gray-800/50">
+                <UploadCloud size={30} className="mb-3 text-violet-600" />
+
+                <p className="text-sm font-semibold text-gray-800 dark:text-white">
+                  Choose images to upload
+                </p>
+
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  {selectedFiles.length} / {MAX_IMAGES} images selected
+                </p>
+
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  multiple
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            )}
+
+            {(previewUrls.length > 0 || imageUrl) && (
+              <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                {imageUrl && (
+                  <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700">
+                    <img
+                      src={imageUrl}
+                      alt="Studio preview"
+                      className="h-36 w-full object-cover"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setImageUrl("")}
+                      aria-label="Remove image URL"
+                      className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-700 shadow-md transition hover:bg-red-50 hover:text-red-500"
+                    >
+                      <X size={16} />
+                    </button>
+
+                    <p className="truncate bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                      Image URL
+                    </p>
+                  </div>
+                )}
+
+                {previewUrls.map((url, index) => (
+                  <div
+                    key={`${selectedFiles[index]?.name}-${index}`}
+                    className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700"
+                  >
+                    <img
+                      src={url}
+                      alt={`Studio preview ${index + 1}`}
+                      className="h-36 w-full object-cover"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      aria-label={`Remove image ${index + 1}`}
+                      className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-700 shadow-md transition hover:bg-red-50 hover:text-red-500"
+                    >
+                      <X size={16} />
+                    </button>
+
+                    <p className="truncate bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                      {selectedFiles[index]?.name}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-800 dark:bg-gray-900">
@@ -455,6 +640,7 @@ const AddStudioPage = () => {
                     value={amenity}
                     className="h-4 w-4 accent-violet-600"
                   />
+
                   {amenity}
                 </label>
               ))}

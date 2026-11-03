@@ -9,10 +9,13 @@ import {
   Camera,
   CheckCircle,
   ShieldCheck,
+  Mail,
+  User,
 } from "lucide-react";
 import BookingModal from "@/components/studios/BookingModal";
+import StudioGallery from "@/components/studios/StudioGallery";
 
-type Studio = {
+interface Studio {
   _id: string;
   title: string;
   category: string;
@@ -25,243 +28,353 @@ type Studio = {
   rating?: number;
   reviewCount?: number;
   imageUrl: string;
+  images?: string[];
   overview: string;
   amenities: string[];
   hostName: string;
   hostEmail: string;
-};
+}
 
-export default async function StudioDetailsPage({
+const StudioDetailsPage = async ({
   params,
 }: {
   params: Promise<{ id: string }>;
-}) {
+}) => {
   const { id } = await params;
 
-  const response = await fetch(
-    `http://localhost:5000/studios/${id}`,
-    {
-      cache: "no-store",
-    }
-  );
+  let studio: Studio | null = null;
 
-  if (response.ok === false) {
+  try {
+    const response = await fetch(
+      `http://localhost:5000/studios/${id}`,
+      {
+        cache: "no-store",
+      },
+    );
+
+    if (response.ok) {
+      studio = await response.json();
+    }
+  } catch {
+    studio = null;
+  }
+
+  if (!studio) {
     return (
-      <section className="flex min-h-screen items-center justify-center bg-gray-50 px-6 dark:bg-gray-950">
+      <main className="flex min-h-[70vh] items-center justify-center px-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Studio Not Found
           </h1>
 
+          <p className="mt-3 text-gray-500 dark:text-gray-400">
+            This studio may have been removed or is unavailable.
+          </p>
+
           <Link
             href="/studios"
-            className="mt-5 inline-flex items-center gap-2 text-violet-600"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-6 py-3 font-semibold text-white transition hover:bg-violet-700"
           >
             <ArrowLeft size={18} />
-            Back to Studios
+            Explore Studios
           </Link>
         </div>
-      </section>
+      </main>
     );
   }
 
-  const studio: Studio = await response.json();
-
   return (
-    <section className="min-h-screen bg-gray-50 px-6 py-12 dark:bg-gray-950">
+    <main className="min-h-screen bg-gray-50 px-4 py-10 dark:bg-gray-950">
       <div className="mx-auto max-w-7xl">
         <Link
           href="/studios"
-          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-gray-600 transition hover:text-violet-600 dark:text-gray-400"
+          className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-gray-600 transition hover:text-violet-600 dark:text-gray-400"
         >
           <ArrowLeft size={18} />
           Back to Studios
         </Link>
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
-          <div className="space-y-8 lg:col-span-2">
-            <div className="overflow-hidden rounded-3xl bg-white shadow-sm dark:bg-gray-900">
-              <div className="relative h-72 sm:h-96">
-                <img
-                  src={studio.imageUrl}
-                  alt={studio.title}
-                  className="h-full w-full object-cover"
-                />
+          <div className="space-y-10 lg:col-span-2">
+            <section>
+              <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <span className="rounded-full bg-violet-100 px-4 py-2 text-xs font-bold text-violet-700 dark:bg-violet-500/10 dark:text-violet-400">
+                    {studio.category}
+                  </span>
 
-                <span className="absolute left-5 top-5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-violet-700 shadow-sm">
-                  {studio.category}
-                </span>
-              </div>
-
-              <div className="p-6 sm:p-8">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
+                  <h1 className="mt-5 text-3xl font-bold text-gray-900 md:text-4xl dark:text-white">
                     {studio.title}
                   </h1>
 
-                  <div className="flex items-center gap-2 rounded-full bg-yellow-50 px-3 py-2 text-sm font-semibold text-gray-800 dark:bg-yellow-500/10 dark:text-yellow-400">
-                    <Star
-                      size={17}
-                      className="fill-yellow-400 text-yellow-400"
-                    />
+                  <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="flex items-center gap-1">
+                      <MapPin size={16} />
+                      {studio.address}, {studio.city}, {studio.country}
+                    </span>
 
-                    {studio.rating || "New"}
-
-                    <span className="font-normal text-gray-500 dark:text-gray-400">
-                      ({studio.reviewCount || 0} reviews)
+                    <span className="flex items-center gap-1">
+                      <Star
+                        size={16}
+                        className="fill-amber-400 text-amber-400"
+                      />
+                      {studio.rating ?? "New"} ({studio.reviewCount ?? 0}{" "}
+                      reviews)
                     </span>
                   </div>
                 </div>
-
-                <div className="mt-4 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <MapPin size={18} className="text-violet-500" />
-                  {studio.address}, {studio.city}, {studio.country}
-                </div>
-
-                <div className="my-8 border-t border-gray-100 dark:border-gray-800"></div>
-
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  About This Studio
-                </h2>
-
-                <p className="mt-4 text-sm leading-8 text-gray-600 dark:text-gray-400">
-                  {studio.overview}
-                </p>
               </div>
-            </div>
 
-            <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-800 dark:bg-gray-900">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Studio Features & Amenities
+              <StudioGallery
+                imageUrl={studio.imageUrl}
+                images={studio.images}
+                title={studio.title}
+              />
+            </section>
+
+            <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-800 dark:bg-gray-900">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                About This Studio
               </h2>
 
-              <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {studio.amenities.map((amenity) => (
-                  <div
-                    key={amenity}
-                    className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400"
-                  >
-                    <CheckCircle
-                      size={19}
-                      className="shrink-0 text-violet-600"
-                    />
-                    {amenity}
-                  </div>
-                ))}
-              </div>
-            </div>
+              <p className="mt-4 whitespace-pre-line leading-8 text-gray-600 dark:text-gray-400">
+                {studio.overview}
+              </p>
+            </section>
 
-            <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-800 dark:bg-gray-900">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-800 dark:bg-gray-900">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="rounded-xl bg-violet-100 p-3 dark:bg-violet-500/10">
+                  <CheckCircle
+                    size={22}
+                    className="text-violet-600"
+                  />
+                </div>
+
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Amenities & Facilities
+                </h2>
+              </div>
+
+              {studio.amenities?.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {studio.amenities.map((amenity) => (
+                    <div
+                      key={amenity}
+                      className="flex items-center gap-3 rounded-xl border border-gray-100 p-4 text-sm font-medium text-gray-700 dark:border-gray-800 dark:text-gray-300"
+                    >
+                      <CheckCircle
+                        size={18}
+                        className="shrink-0 text-violet-600"
+                      />
+                      {amenity}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  No amenities information available.
+                </p>
+              )}
+            </section>
+
+            <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-800 dark:bg-gray-900">
+              <h2 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
                 Studio Information
               </h2>
 
-              <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-violet-50 p-3 dark:bg-violet-500/10">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div className="flex items-center gap-4 rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
+                  <div className="rounded-xl bg-violet-100 p-3 dark:bg-violet-500/10">
                     <Clock className="text-violet-600" size={22} />
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      Flexible Hours
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Booking Hours
                     </p>
-
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Book your preferred time
+                    <p className="font-semibold text-gray-900 dark:text-white">
+                      Flexible Hours
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-violet-50 p-3 dark:bg-violet-500/10">
+                <div className="flex items-center gap-4 rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
+                  <div className="rounded-xl bg-violet-100 p-3 dark:bg-violet-500/10">
                     <Users className="text-violet-600" size={22} />
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Maximum Capacity
                     </p>
-
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    <p className="font-semibold text-gray-900 dark:text-white">
                       {studio.capacity} People
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-violet-50 p-3 dark:bg-violet-500/10">
-                    <Wifi className="text-violet-600" size={22} />
+                <div className="flex items-center gap-4 rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
+                  <div className="rounded-xl bg-violet-100 p-3 dark:bg-violet-500/10">
+                    <ShieldCheck
+                      className="text-violet-600"
+                      size={22}
+                    />
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Security Deposit
                     </p>
-
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      ${studio.securityDeposit.toLocaleString()}
+                    <p className="font-semibold text-gray-900 dark:text-white">
+                      ${studio.securityDeposit}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-violet-50 p-3 dark:bg-violet-500/10">
+                <div className="flex items-center gap-4 rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
+                  <div className="rounded-xl bg-violet-100 p-3 dark:bg-violet-500/10">
                     <Camera className="text-violet-600" size={22} />
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      Hosted By
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Studio Category
                     </p>
-
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {studio.hostName}
+                    <p className="font-semibold text-gray-900 dark:text-white">
+                      {studio.category}
                     </p>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </section>
 
-          <div>
-            <div className="sticky top-28 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Starting from
-              </p>
+            <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-800 dark:bg-gray-900">
+              <h2 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
+                Hosted By
+              </h2>
 
-              <div className="mt-2 flex items-end gap-2">
-                <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                  ${studio.hourlyRate.toLocaleString()}
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-500/10">
+                  <User size={30} className="text-violet-600" />
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    {studio.hostName || "Studio Host"}
+                  </h3>
+
+                  <p className="mt-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <Mail size={16} />
+                    {studio.hostEmail || "Contact information unavailable"}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-800 dark:bg-gray-900">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Reviews & Ratings
+              </h2>
+
+              <div className="mt-5 flex items-center gap-3">
+                <Star
+                  size={28}
+                  className="fill-amber-400 text-amber-400"
+                />
+
+                <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {studio.rating ?? "New"}
                 </span>
 
-                <span className="pb-1 text-sm text-gray-500 dark:text-gray-400">
-                  / hour
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  ({studio.reviewCount ?? 0} reviews)
                 </span>
               </div>
 
-              <div className="my-6 border-t border-gray-100 dark:border-gray-800"></div>
+              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                {studio.reviewCount
+                  ? "Guest reviews will be displayed here."
+                  : "No reviews yet. Be the first to share your experience after booking."}
+              </p>
+            </section>
+          </div>
+
+          <aside className="lg:col-span-1">
+            <div className="sticky top-24 rounded-3xl border border-gray-100 bg-white p-6 shadow-lg dark:border-gray-800 dark:bg-gray-900">
+              <div className="border-b border-gray-100 pb-6 dark:border-gray-800">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Hourly Rate
+                </p>
+
+                <div className="mt-2 flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-violet-600">
+                    ${studio.hourlyRate}
+                  </span>
+
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    / hour
+                  </span>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between text-sm">
+                  <span className="text-gray-500 dark:text-gray-400">
+                    Security Deposit
+                  </span>
+
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    ${studio.securityDeposit}
+                  </span>
+                </div>
+              </div>
+
+              <div className="py-6">
+                <h3 className="mb-4 font-bold text-gray-900 dark:text-white">
+                  Booking Information
+                </h3>
+
+                <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                  <p className="flex items-center gap-2">
+                    <Clock size={17} />
+                    Flexible booking hours
+                  </p>
+
+                  <p className="flex items-center gap-2">
+                    <Users size={17} />
+                    Up to {studio.capacity} people
+                  </p>
+
+                  <p className="flex items-center gap-2">
+                    <Wifi size={17} />
+                    Check available facilities
+                  </p>
+                </div>
+              </div>
 
               <BookingModal
                 studioId={studio._id}
+                studioTitle={studio.title}
                 hourlyRate={studio.hourlyRate}
+                securityDeposit={studio.securityDeposit}
               />
 
-              <div className="mt-5 flex items-start gap-3 rounded-xl bg-violet-50 p-4 dark:bg-violet-500/10">
+              <div className="mt-5 flex gap-3 rounded-xl bg-violet-50 p-4 dark:bg-violet-500/10">
                 <ShieldCheck
                   size={20}
                   className="shrink-0 text-violet-600"
                 />
 
-                <p className="text-xs leading-6 text-gray-600 dark:text-gray-400">
-                  Your booking is protected. Enjoy a safe and reliable
-                  studio booking experience.
+                <p className="text-xs leading-5 text-gray-600 dark:text-gray-400">
+                  Book securely through StudioSpace. Check your booking
+                  details before confirming your reservation.
                 </p>
               </div>
             </div>
-          </div>
+          </aside>
         </div>
       </div>
-    </section>
+    </main>
   );
-}
+};
+
+export default StudioDetailsPage;

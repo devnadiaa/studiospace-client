@@ -9,18 +9,26 @@ import {
   Mail,
 } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { authClient } from "@/lib/auth-client";
 
 const LoginPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  const requestedPath = searchParams.get("callbackURL");
+
+  const redirectPath =
+    requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+      ? requestedPath
+      : "/";
 
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -31,7 +39,7 @@ const LoginPage = () => {
       const { error } = await authClient.signIn.email({
         email: email.trim().toLowerCase(),
         password,
-        callbackURL: "/",
+        callbackURL: redirectPath,
       });
 
       if (error) {
@@ -41,7 +49,7 @@ const LoginPage = () => {
 
       toast.success("Login successful!");
 
-      router.push("/");
+      router.push(redirectPath);
       router.refresh();
     } catch (error) {
       toast.error(
@@ -60,7 +68,7 @@ const LoginPage = () => {
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: redirectPath,
       });
 
       if (error) {

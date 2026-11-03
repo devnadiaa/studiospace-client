@@ -16,6 +16,7 @@ import {
   PlusCircle,
   Building2,
   CalendarDays,
+  ClipboardList,
   LogOut,
 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -72,6 +73,11 @@ const Navbar = () => {
       name: "My Bookings",
       href: "/my-bookings",
       icon: CalendarDays,
+    },
+    {
+      name: "Host Booking Requests",
+      href: "/host-bookings",
+      icon: ClipboardList,
     },
   ];
 

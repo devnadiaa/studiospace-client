@@ -53,7 +53,7 @@ const MyListingsPage = () => {
     if (!user) {
       setStudios([]);
       setLoading(false);
-      router.replace("/login");
+      router.replace("/login?callbackURL=%2Fmy-listings");
       return;
     }
 
