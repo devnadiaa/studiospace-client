@@ -1,12 +1,38 @@
 import Link from "next/link";
 import { MapPin, Star, ArrowUpRight } from "lucide-react";
 
-const FeaturedStudios = async () => {
-  const response = await fetch("http://localhost:5000/studios", {
-    cache: "no-store",
-  });
+type Studio = {
+  _id: string;
+  title: string;
+  category: string;
+  imageUrl: string;
+  rating?: number;
+  address: string;
+  city: string;
+  country: string;
+  hourlyRate: number;
+};
 
-  const studios = await response.json();
+const FeaturedStudios = async () => {
+  const backendUrl = (
+    process.env.BACKEND_URL || "http://localhost:5000"
+  ).replace(/\/$/, "");
+
+  let studios: Studio[] = [];
+
+  try {
+    const response = await fetch(`${backendUrl}/studios`, {
+      cache: "no-store",
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      studios = Array.isArray(data) ? data : [];
+    }
+  } catch {
+    studios = [];
+  }
+
   const featuredStudios = studios.slice(0, 6);
 
   return (
@@ -37,69 +63,77 @@ const FeaturedStudios = async () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredStudios.map((studio: any) => (
-            <div
-              key={studio._id}
-              className="group overflow-hidden rounded-2xl border border-gray-100 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900"
-            >
-              <div className="relative h-56 overflow-hidden bg-gray-100 dark:bg-gray-800">
-                <img
-                  src={studio.imageUrl}
-                  alt={studio.title}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
+        {featuredStudios.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredStudios.map((studio) => (
+              <div
+                key={studio._id}
+                className="group overflow-hidden rounded-2xl border border-gray-100 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900"
+              >
+                <div className="relative h-56 overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  <img
+                    src={studio.imageUrl}
+                    alt={studio.title}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
 
-                <span className="absolute top-4 left-4 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 shadow-sm">
-                  {studio.category}
-                </span>
+                  <span className="absolute top-4 left-4 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 shadow-sm">
+                    {studio.category}
+                  </span>
 
-                <span className="absolute top-4 right-4 flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 shadow-sm">
-                  {studio.rating ? (
-                    <>
-                      <Star
-                        size={14}
-                        className="fill-yellow-400 text-yellow-400"
-                      />
-                      {studio.rating}
-                    </>
-                  ) : (
-                    "New Studio"
-                  )}
-                </span>
-              </div>
-
-              <div className="p-5">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                  {studio.title}
-                </h3>
-
-                <div className="mt-3 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <MapPin size={16} className="text-violet-500" />
-                  {studio.address}, {studio.city}, {studio.country}
+                  <span className="absolute top-4 right-4 flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 shadow-sm">
+                    {studio.rating ? (
+                      <>
+                        <Star
+                          size={14}
+                          className="fill-yellow-400 text-yellow-400"
+                        />
+                        {studio.rating}
+                      </>
+                    ) : (
+                      "New Studio"
+                    )}
+                  </span>
                 </div>
 
-                <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    <span className="text-xl font-bold text-gray-900 dark:text-white">
-                      ${studio.hourlyRate}
-                    </span>
-                    {" "}/ hr
-                  </p>
+                <div className="p-5">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    {studio.title}
+                  </h3>
 
-                  <Link
-                    href={`/studios/${studio._id}`}
-                    className="rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700"
-                  >
-                    View Details
-                  </Link>
+                  <div className="mt-3 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <MapPin size={16} className="text-violet-500" />
+                    {studio.address}, {studio.city}, {studio.country}
+                  </div>
+
+                  <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <span className="text-xl font-bold text-gray-900 dark:text-white">
+                        ${studio.hourlyRate}
+                      </span>
+                      {" "}/ hr
+                    </p>
+
+                    <Link
+                      href={`/studios/${studio._id}`}
+                      className="rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700"
+                    >
+                      View Details
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center dark:border-gray-700">
+            <p className="text-gray-500 dark:text-gray-400">
+              No studios are available right now.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

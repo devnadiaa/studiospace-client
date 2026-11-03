@@ -9,6 +9,10 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
+
 const categories = [
   "All Studios",
   "Photo Studio",
@@ -19,6 +23,14 @@ const categories = [
   "Sound Stage",
 ];
 
+const categoryMap: Record<string, string> = {
+  "Photo Studios": "Photo Studio",
+  "Sound Stages": "Sound Stage",
+  "Podcast Rooms": "Podcast Lounge",
+  "Music Suites": "Music Suite",
+  "Art Workshops": "Workshop",
+};
+
 export default function StudiosPage() {
   const [studios, setStudios] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
@@ -28,12 +40,35 @@ export default function StudiosPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStudios = async () => {
-      const response = await fetch("http://localhost:5000/studios");
-      const data = await response.json();
+    const params = new URLSearchParams(window.location.search);
+    const requestedCategory = params.get("category");
 
-      setStudios(data);
-      setLoading(false);
+    if (requestedCategory) {
+      const mappedCategory =
+        categoryMap[requestedCategory] || requestedCategory;
+
+      if (categories.includes(mappedCategory)) {
+        setSelectedCategory(mappedCategory);
+      }
+    }
+
+    const fetchStudios = async () => {
+      try {
+        const response = await fetch(`${API_URL}/studios`, {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to load studios");
+        }
+
+        const data = await response.json();
+        setStudios(Array.isArray(data) ? data : []);
+      } catch {
+        setStudios([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchStudios();
@@ -47,10 +82,10 @@ export default function StudiosPage() {
     const search = appliedSearch.toLowerCase();
 
     const matchesSearch =
-      studio.title.toLowerCase().includes(search) ||
-      studio.address.toLowerCase().includes(search) ||
-      studio.city.toLowerCase().includes(search) ||
-      studio.country.toLowerCase().includes(search);
+      String(studio.title || "").toLowerCase().includes(search) ||
+      String(studio.address || "").toLowerCase().includes(search) ||
+      String(studio.city || "").toLowerCase().includes(search) ||
+      String(studio.country || "").toLowerCase().includes(search);
 
     const matchesCategory =
       selectedCategory === "All Studios" ||

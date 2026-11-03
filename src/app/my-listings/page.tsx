@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import {
   Plus,
@@ -12,6 +13,7 @@ import {
   ArrowRight,
   X,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 interface Studio {
   _id: string;
@@ -23,41 +25,81 @@ interface Studio {
   country: string;
   hourlyRate: number;
   hostEmail: string;
+  hostId?: string;
 }
 
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
+
 const MyListingsPage = () => {
+  const router = useRouter();
+
+  const { data: session, isPending: isSessionPending } =
+    authClient.useSession();
+
+  const user = session?.user;
+
   const [studios, setStudios] = useState<Studio[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStudio, setSelectedStudio] = useState<Studio | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
+    if (isSessionPending) {
+      return;
+    }
+
+    if (!user) {
+      setStudios([]);
+      setLoading(false);
+      router.replace("/login");
+      return;
+    }
+
+    let isMounted = true;
+
     const fetchStudios = async () => {
+      setLoading(true);
+
       try {
-        const response = await fetch("http://localhost:5000/studios", {
+        const response = await fetch(`${API_URL}/my-studios`, {
+          credentials: "include",
           cache: "no-store",
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to load studio listings.");
+        const data = await response.json();
+
+        if (response.ok === false) {
+          throw new Error(
+            data.message || "Failed to load studio listings."
+          );
         }
 
-        const allStudios = await response.json();
-
-        const myStudios = allStudios.filter(
-          (studio: Studio) => studio.hostEmail === "user@example.com",
-        );
-
-        setStudios(myStudios);
+        if (isMounted) {
+          setStudios(data);
+        }
       } catch (error) {
-        toast.error("Failed to load studio listings.");
+        if (isMounted) {
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to load studio listings."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchStudios();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isSessionPending, user?.id, router]);
 
   const handleDelete = async () => {
     if (!selectedStudio) {
@@ -68,34 +110,30 @@ const MyListingsPage = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/studios/${selectedStudio._id}`,
+        `${API_URL}/studios/${selectedStudio._id}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            hostEmail: selectedStudio.hostEmail,
-          }),
-        },
+          credentials: "include",
+        }
       );
 
       const data = await response.json();
 
-      if (!response.ok) {
+      if (response.ok === false) {
         toast.error(data.message || "Failed to delete studio.");
         return;
       }
 
       setStudios((previousStudios) =>
         previousStudios.filter(
-          (studio) => studio._id !== selectedStudio._id,
-        ),
+          (studio) => studio._id !== selectedStudio._id
+        )
       );
 
       setSelectedStudio(null);
+
       toast.success("Studio deleted successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setDeleting(false);
@@ -106,7 +144,7 @@ const MyListingsPage = () => {
   const availableStudios = studios.length;
   const bookedStudios = 0;
 
-  if (loading) {
+  if (isSessionPending || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 text-gray-600 dark:bg-gray-950 dark:text-gray-300">
         Loading your listings...
@@ -223,11 +261,17 @@ const MyListingsPage = () => {
                 className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900"
               >
                 <div className="relative h-56">
-                  <img
-                    src={studio.imageUrl}
-                    alt={studio.title}
-                    className="h-full w-full object-cover"
-                  />
+                  {studio.imageUrl ? (
+                    <img
+                      src={studio.imageUrl}
+                      alt={studio.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-gray-100 text-sm text-gray-400 dark:bg-gray-800">
+                      Studio image unavailable
+                    </div>
+                  )}
 
                   <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-violet-600 shadow-sm">
                     {studio.category}

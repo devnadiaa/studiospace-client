@@ -7,6 +7,38 @@ import {
   FaXTwitter,
 } from "react-icons/fa6";
 
+const categories = [
+  { name: "Photo Studios", value: "Photo Studio" },
+  { name: "Sound Stages", value: "Sound Stage" },
+  { name: "Podcast Rooms", value: "Podcast Lounge" },
+  { name: "Music Suites", value: "Music Suite" },
+  { name: "Art Workshops", value: "Workshop" },
+];
+
+const socialLinks = [
+  {
+    name: "Facebook",
+    icon: FaFacebookF,
+    className: "bg-[#1877F2]",
+  },
+  {
+    name: "Instagram",
+    icon: FaInstagram,
+    className:
+      "bg-gradient-to-tr from-[#FCAF45] via-[#E1306C] to-[#833AB4]",
+  },
+  {
+    name: "LinkedIn",
+    icon: FaLinkedinIn,
+    className: "bg-[#0A66C2]",
+  },
+  {
+    name: "X",
+    icon: FaXTwitter,
+    className: "bg-black dark:bg-white dark:text-black",
+  },
+];
+
 const Footer = () => {
   return (
     <footer className="border-t border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300">
@@ -24,25 +56,21 @@ const Footer = () => {
             </Link>
 
             <p className="mt-5 max-w-sm text-sm leading-7 text-gray-600 dark:text-gray-400">
-              Making creative spaces accessible to everyone. Discover inspiring
-              studios, connect with creators, and bring your ideas to life.
+              Making creative spaces accessible to everyone. Discover
+              inspiring studios, connect with creators, and bring your
+              ideas to life.
             </p>
 
             <div className="mt-7 flex items-center gap-3">
-              {[
-                { icon: FaFacebookF, label: "Facebook" },
-                { icon: FaInstagram, label: "Instagram" },
-                { icon: FaLinkedinIn, label: "LinkedIn" },
-                { icon: FaXTwitter, label: "X" },
-              ].map(({ icon: Icon, label }) => (
-                <a
-                  key={label}
-                  href="#"
-                  aria-label={label}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition-all hover:border-violet-600 hover:bg-violet-600 hover:text-white dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400"
+              {socialLinks.map(({ name, icon: Icon, className }) => (
+                <span
+                  key={name}
+                  aria-label={name}
+                  title={name}
+                  className={`flex h-10 w-10 cursor-default items-center justify-center rounded-xl text-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md ${className}`}
                 >
-                  <Icon size={17} />
-                </a>
+                  <Icon size={18} />
+                </span>
               ))}
             </div>
           </div>
@@ -77,19 +105,13 @@ const Footer = () => {
             </h3>
 
             <ul className="space-y-4 text-sm">
-              {[
-                "Photo Studios",
-                "Sound Stages",
-                "Podcast Rooms",
-                "Music Suites",
-                "Art Workshops",
-              ].map((category) => (
-                <li key={category}>
+              {categories.map((category) => (
+                <li key={category.name}>
                   <Link
-                    href={`/studios?category=${encodeURIComponent(category)}`}
+                    href={`/studios?category=${encodeURIComponent(category.value)}`}
                     className="transition-colors hover:text-violet-600"
                   >
-                    {category}
+                    {category.name}
                   </Link>
                 </li>
               ))}
@@ -102,26 +124,32 @@ const Footer = () => {
             </h3>
 
             <p className="mb-5 text-sm leading-6 text-gray-600 dark:text-gray-400">
-              Subscribe to receive updates about creative spaces and new
-              opportunities.
+              Subscribe to receive updates about creative spaces and
+              new opportunities.
             </p>
 
-            <form className="flex rounded-xl border border-gray-200 bg-white p-1.5 focus-within:border-violet-500 dark:border-gray-800 dark:bg-gray-900">
+            <div className="flex rounded-xl border border-gray-200 bg-white p-1.5 transition focus-within:border-violet-500 dark:border-gray-800 dark:bg-gray-900">
               <input
                 type="email"
                 placeholder="Enter your email"
                 aria-label="Your email address"
-                className="min-w-0 flex-1 bg-transparent px-3 text-sm outline-none"
+                className="h-10 min-w-0 flex-1 bg-transparent px-3 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
               />
 
               <button
-                type="submit"
-                aria-label="Subscribe"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-700"
+                type="button"
+                aria-label="Newsletter subscription"
+                disabled
+                title="Newsletter subscription is not connected yet"
+                className="flex h-10 w-10 shrink-0 cursor-not-allowed items-center justify-center rounded-lg bg-violet-600 text-white opacity-60"
               >
                 <ArrowRight size={18} />
               </button>
-            </form>
+            </div>
+
+            <p className="mt-2 text-xs text-gray-400">
+              Newsletter subscription is not connected yet.
+            </p>
           </div>
         </div>
 

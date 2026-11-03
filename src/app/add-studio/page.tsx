@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import {
   ArrowLeft,
@@ -13,6 +15,7 @@ import {
   Users,
   Image as ImageIcon,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 const amenities = [
   "Professional Lighting",
@@ -27,32 +30,84 @@ const amenities = [
   "Projector",
 ];
 
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
+
 const AddStudioPage = () => {
+  const router = useRouter();
+
+  const { data: session, isPending } = authClient.useSession();
+
+  const user = session?.user;
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isPending) {
+      return;
+    }
+
+    if (user === undefined || user === null) {
+      toast.info("Please login to publish a studio.");
+      router.replace("/login");
+    }
+  }, [isPending, user?.id, router]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (user === undefined || user === null) {
+      toast.error("Please login to publish a studio.");
+      router.push("/login");
+      return;
+    }
 
     const form = e.currentTarget;
     const formData = new FormData(form);
 
     const studioData = {
-      title: formData.get("title"),
-      category: formData.get("category"),
+      title: String(formData.get("title") || "").trim(),
+      category: String(formData.get("category") || ""),
       capacity: Number(formData.get("capacity")),
-      overview: formData.get("overview"),
+      overview: String(formData.get("overview") || "").trim(),
       hourlyRate: Number(formData.get("hourlyRate")),
       securityDeposit: Number(formData.get("securityDeposit")),
-      address: formData.get("address"),
-      city: formData.get("city"),
-      country: formData.get("country"),
-      imageUrl: formData.get("imageUrl"),
+      address: String(formData.get("address") || "").trim(),
+      city: String(formData.get("city") || "").trim(),
+      country: String(formData.get("country") || "").trim(),
+      imageUrl: String(formData.get("imageUrl") || "").trim(),
       amenities: formData.getAll("amenities"),
-      hostName: formData.get("hostName"),
-      hostEmail: formData.get("hostEmail"),
     };
 
+    if (
+      studioData.title === "" ||
+      studioData.category === "" ||
+      studioData.overview === "" ||
+      studioData.address === "" ||
+      studioData.city === "" ||
+      studioData.country === "" ||
+      studioData.imageUrl === ""
+    ) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    if (
+      studioData.capacity <= 0 ||
+      studioData.hourlyRate < 0 ||
+      studioData.securityDeposit < 0
+    ) {
+      toast.error("Please enter valid pricing and capacity.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      const response = await fetch("http://localhost:5000/studios", {
+      const response = await fetch(`${API_URL}/studios`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -61,17 +116,31 @@ const AddStudioPage = () => {
 
       const data = await response.json();
 
-      if (!response.ok) {
+      if (response.ok === false) {
         toast.error(data.message || "Failed to publish studio.");
         return;
       }
 
       toast.success("Studio published successfully!");
+
       form.reset();
-    } catch (error) {
+
+      router.push("/my-listings");
+      router.refresh();
+    } catch {
       toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  if (isPending || user === undefined || user === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 text-gray-600 dark:bg-gray-950 dark:text-gray-300">
+        Loading your account...
+      </div>
+    );
+  }
 
   return (
     <section className="min-h-screen bg-gray-50 px-6 py-12 dark:bg-gray-950">
@@ -190,7 +259,7 @@ const AddStudioPage = () => {
                   placeholder="Describe your studio, its atmosphere, facilities and what makes it special..."
                   required
                   className="w-full resize-none rounded-xl border border-gray-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-violet-500 dark:border-gray-700 dark:text-white"
-                ></textarea>
+                />
               </div>
             </div>
           </div>
@@ -411,8 +480,7 @@ const AddStudioPage = () => {
 
                 <input
                   type="text"
-                  name="hostName"
-                  value="Logged-in User"
+                  value={user.name || ""}
                   readOnly
                   className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-500 outline-none dark:border-gray-700 dark:bg-gray-800"
                 />
@@ -425,8 +493,7 @@ const AddStudioPage = () => {
 
                 <input
                   type="email"
-                  name="hostEmail"
-                  value="user@example.com"
+                  value={user.email || ""}
                   readOnly
                   className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-500 outline-none dark:border-gray-700 dark:bg-gray-800"
                 />
@@ -444,10 +511,11 @@ const AddStudioPage = () => {
 
             <button
               type="submit"
-              className="flex h-12 items-center justify-center gap-2 rounded-xl bg-violet-600 px-8 text-sm font-semibold text-white transition hover:bg-violet-700"
+              disabled={isSubmitting}
+              className="flex h-12 items-center justify-center gap-2 rounded-xl bg-violet-600 px-8 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Plus size={18} />
-              Publish Studio
+              {isSubmitting ? "Publishing..." : "Publish Studio"}
             </button>
           </div>
         </form>

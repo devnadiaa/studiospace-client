@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   Aperture,
@@ -11,24 +11,68 @@ import {
   ArrowUpRight,
   Sun,
   Moon,
+  ChevronDown,
+  LayoutDashboard,
+  PlusCircle,
+  Building2,
+  CalendarDays,
+  LogOut,
 } from "lucide-react";
+import { toast } from "react-toastify";
+import { authClient } from "@/lib/auth-client";
 
 const Navbar = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
 
+  const { data: session, isPending } = authClient.useSession();
+
+  const user = session?.user;
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    setIsMenuOpen(false);
+    setIsProfileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.image]);
 
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Explore Studios", href: "/studios" },
     { name: "How It Works", href: "/how-it-works" },
     { name: "About Us", href: "/about" },
+  ];
+
+  const profileLinks = [
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Add New Studio",
+      href: "/add-studio",
+      icon: PlusCircle,
+    },
+    {
+      name: "My Studio Listings",
+      href: "/my-listings",
+      icon: Building2,
+    },
+    {
+      name: "My Bookings",
+      href: "/my-bookings",
+      icon: CalendarDays,
+    },
   ];
 
   const isActive = (href: string) => {
@@ -41,6 +85,60 @@ const Navbar = () => {
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      setIsProfileOpen(false);
+      setIsMenuOpen(false);
+
+      toast.success("Logged out successfully!");
+
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Logout failed. Please try again."
+      );
+    }
+  };
+
+  const UserAvatar = ({ size = 40 }: { size?: number }) => {
+    return user?.image && !avatarError ? (
+      <img
+        src={user.image}
+        alt=""
+        aria-hidden="true"
+        width={size}
+        height={size}
+        referrerPolicy="no-referrer"
+        onError={() => setAvatarError(true)}
+        className="shrink-0 rounded-full object-cover"
+        style={{
+          width: size,
+          height: size,
+        }}
+      />
+    ) : (
+      <span
+        style={{
+          width: size,
+          height: size,
+        }}
+        className="flex shrink-0 items-center justify-center rounded-full bg-violet-600 font-semibold text-white"
+      >
+        {user?.name?.charAt(0).toUpperCase() || "U"}
+      </span>
+    );
   };
 
   return (
@@ -93,23 +191,94 @@ const Navbar = () => {
             )}
           </button>
 
-          <Link
-            href="/login"
-            className="rounded-full px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-          >
-            Login
-          </Link>
+          {!isPending &&
+            (user ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  aria-label="Open profile menu"
+                  aria-expanded={isProfileOpen}
+                  className="flex items-center gap-2 rounded-full border border-gray-200 py-1.5 pl-1.5 pr-3 transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                >
+                  <UserAvatar size={36} />
 
-          <Link
-            href="/register"
-            className="group flex items-center gap-2 rounded-full bg-violet-600 px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-violet-700"
-          >
-            Register
-            <ArrowUpRight
-              size={16}
-              className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-            />
-          </Link>
+                  <span className="max-w-28 truncate text-sm font-semibold text-gray-700 dark:text-gray-200">
+                    {user.name}
+                  </span>
+
+                  <ChevronDown
+                    size={16}
+                    className={`shrink-0 text-gray-500 transition-transform ${
+                      isProfileOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {isProfileOpen && (
+                  <div className="absolute right-0 top-14 w-60 rounded-2xl border border-gray-100 bg-white p-2 shadow-xl dark:border-gray-700 dark:bg-gray-900">
+                    <div className="border-b border-gray-100 px-3 py-3 dark:border-gray-800">
+                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                        {user.name}
+                      </p>
+
+                      <p className="mt-1 truncate text-xs text-gray-500 dark:text-gray-400">
+                        {user.email}
+                      </p>
+                    </div>
+
+                    <div className="py-2">
+                      {profileLinks.map((link) => {
+                        const Icon = link.icon;
+
+                        return (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            onClick={() => setIsProfileOpen(false)}
+                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-violet-50 hover:text-violet-600 dark:text-gray-200 dark:hover:bg-gray-800"
+                          >
+                            <Icon size={17} />
+                            {link.name}
+                          </Link>
+                        );
+                      })}
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-2 dark:border-gray-800">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-500 transition hover:bg-red-50 dark:hover:bg-red-950"
+                      >
+                        <LogOut size={17} />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded-full px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  Login
+                </Link>
+
+                <Link
+                  href="/register"
+                  className="group flex items-center gap-2 rounded-full bg-violet-600 px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-violet-700"
+                >
+                  Register
+                  <ArrowUpRight
+                    size={16}
+                    className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  />
+                </Link>
+              </>
+            ))}
         </div>
 
         {/* Mobile Actions */}
@@ -158,23 +327,72 @@ const Navbar = () => {
               </Link>
             ))}
 
-            <div className="mt-3 grid grid-cols-2 gap-3 border-t border-gray-100 pt-4 dark:border-gray-800">
-              <Link
-                href="/login"
-                onClick={() => setIsMenuOpen(false)}
-                className="rounded-full border border-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
-              >
-                Login
-              </Link>
+            {!isPending && (
+              <div className="mt-3 border-t border-gray-100 pt-4 dark:border-gray-800">
+                {user ? (
+                  <>
+                    <div className="mb-4 flex items-center gap-3 px-3">
+                      <UserAvatar size={42} />
 
-              <Link
-                href="/register"
-                onClick={() => setIsMenuOpen(false)}
-                className="rounded-full bg-violet-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-violet-700"
-              >
-                Register
-              </Link>
-            </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                          {user.name}
+                        </p>
+
+                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      {profileLinks.map((link) => {
+                        const Icon = link.icon;
+
+                        return (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            onClick={() => setIsMenuOpen(false)}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-violet-50 hover:text-violet-600 dark:text-gray-200 dark:hover:bg-gray-800"
+                          >
+                            <Icon size={18} />
+                            {link.name}
+                          </Link>
+                        );
+                      })}
+
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold text-red-500 transition hover:bg-red-50 dark:hover:bg-red-950"
+                      >
+                        <LogOut size={18} />
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="rounded-full border border-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                    >
+                      Login
+                    </Link>
+
+                    <Link
+                      href="/register"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="rounded-full bg-violet-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-violet-700"
+                    >
+                      Register
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

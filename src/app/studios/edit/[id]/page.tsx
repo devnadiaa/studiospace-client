@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "react-toastify";
 import {
   ArrowLeft,
@@ -13,6 +13,11 @@ import {
   Image,
   CheckCircle,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
 
 const amenities = [
   "Professional Lighting",
@@ -40,33 +45,59 @@ interface Studio {
   amenities: string[];
   hostName: string;
   hostEmail: string;
+  hostId?: string;
 }
 
 const EditStudioPage = () => {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
+  const { data: session, isPending: sessionLoading } =
+    authClient.useSession();
+
   const [studio, setStudio] = useState<Studio | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [message, setMessage] = useState("");
 
+  const user = session?.user;
+
   useEffect(() => {
+    if (sessionLoading) {
+      return;
+    }
+
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
     const fetchStudio = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:5000/studios/${id}`,
-        );
+        const response = await fetch(`${API_URL}/studios/${id}`, {
+          credentials: "include",
+        });
 
         if (!response.ok) {
           setMessage("Studio not found.");
-          toast.error("Studio not found.");
           return;
         }
 
         const data = await response.json();
+
+        const isOwner =
+          (data.hostId && data.hostId === user.id) ||
+          (data.hostEmail &&
+            user.email &&
+            data.hostEmail.toLowerCase() === user.email.toLowerCase());
+
+        if (!isOwner) {
+          setMessage("You do not have permission to edit this studio.");
+          return;
+        }
+
         setStudio(data);
-      } catch (error) {
+      } catch {
         setMessage("Failed to load studio.");
         toast.error("Failed to load studio.");
       } finally {
@@ -75,9 +106,9 @@ const EditStudioPage = () => {
     };
 
     fetchStudio();
-  }, [id]);
+  }, [id, user?.id, sessionLoading, router]);
 
-  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdate = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!studio) {
@@ -101,22 +132,19 @@ const EditStudioPage = () => {
       country: formData.get("country"),
       imageUrl: formData.get("imageUrl"),
       amenities: formData.getAll("amenities"),
-      hostEmail: studio.hostEmail,
     };
 
     try {
-      const response = await fetch(
-        `http://localhost:5000/studios/${id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedStudio),
+      const response = await fetch(`${API_URL}/studios/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        credentials: "include",
+        body: JSON.stringify(updatedStudio),
+      });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         toast.error(data.message || "Failed to update studio.");
@@ -127,14 +155,14 @@ const EditStudioPage = () => {
 
       router.push("/my-listings");
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setUpdating(false);
     }
   };
 
-  if (loading) {
+  if (loading || sessionLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 text-gray-600 dark:bg-gray-950 dark:text-gray-300">
         Loading studio...
@@ -148,6 +176,7 @@ const EditStudioPage = () => {
         <p className="text-gray-600 dark:text-gray-300">
           {message || "Studio not found."}
         </p>
+
         <Link
           href="/my-listings"
           className="rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white"
@@ -194,6 +223,7 @@ const EditStudioPage = () => {
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                   Basic Information
                 </h2>
+
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Update your studio details.
                 </p>
@@ -205,6 +235,7 @@ const EditStudioPage = () => {
                 <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Studio Title
                 </label>
+
                 <input
                   type="text"
                   name="title"
@@ -219,9 +250,11 @@ const EditStudioPage = () => {
                   <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                     Studio Category
                   </label>
+
                   <select
                     name="category"
                     defaultValue={studio.category}
+                    required
                     className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
                   >
                     <option>Photo Studio</option>
@@ -237,15 +270,18 @@ const EditStudioPage = () => {
                   <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                     Maximum Capacity
                   </label>
+
                   <div className="relative">
                     <Users
                       size={18}
                       className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
                     />
+
                     <input
                       type="number"
                       name="capacity"
                       defaultValue={studio.capacity}
+                      min="1"
                       required
                       className="h-12 w-full rounded-xl border border-gray-200 bg-transparent pl-11 pr-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
                     />
@@ -257,6 +293,7 @@ const EditStudioPage = () => {
                 <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Detailed Overview
                 </label>
+
                 <textarea
                   name="overview"
                   rows={5}
@@ -278,6 +315,7 @@ const EditStudioPage = () => {
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                   Pricing Information
                 </h2>
+
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Set your studio rental prices.
                 </p>
@@ -289,10 +327,12 @@ const EditStudioPage = () => {
                 <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Hourly Rate ($)
                 </label>
+
                 <input
                   type="number"
                   name="hourlyRate"
                   defaultValue={studio.hourlyRate}
+                  min="1"
                   required
                   className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
                 />
@@ -302,10 +342,12 @@ const EditStudioPage = () => {
                 <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Security Deposit ($)
                 </label>
+
                 <input
                   type="number"
                   name="securityDeposit"
                   defaultValue={studio.securityDeposit}
+                  min="0"
                   required
                   className="h-12 w-full rounded-xl border border-gray-200 bg-transparent px-4 text-sm outline-none focus:border-violet-500 dark:border-gray-700 dark:text-white"
                 />
@@ -323,6 +365,7 @@ const EditStudioPage = () => {
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                   Location Information
                 </h2>
+
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Update where your studio is located.
                 </p>
@@ -334,6 +377,7 @@ const EditStudioPage = () => {
                 <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Full Address
                 </label>
+
                 <input
                   type="text"
                   name="address"
@@ -348,6 +392,7 @@ const EditStudioPage = () => {
                   <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                     City
                   </label>
+
                   <input
                     type="text"
                     name="city"
@@ -361,6 +406,7 @@ const EditStudioPage = () => {
                   <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                     Country
                   </label>
+
                   <input
                     type="text"
                     name="country"
@@ -383,6 +429,7 @@ const EditStudioPage = () => {
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                   Studio Image
                 </h2>
+
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Update your studio cover image.
                 </p>
@@ -392,6 +439,7 @@ const EditStudioPage = () => {
             <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
               Image URL
             </label>
+
             <input
               type="url"
               name="imageUrl"
@@ -406,6 +454,7 @@ const EditStudioPage = () => {
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                 Studio Amenities
               </h2>
+
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Select the facilities available in your studio.
               </p>
@@ -424,6 +473,7 @@ const EditStudioPage = () => {
                     defaultChecked={studio.amenities?.includes(amenity)}
                     className="h-4 w-4 accent-violet-600"
                   />
+
                   {amenity}
                 </label>
               ))}
@@ -435,6 +485,7 @@ const EditStudioPage = () => {
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                 Host Information
               </h2>
+
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Your account information cannot be changed here.
               </p>
@@ -445,9 +496,10 @@ const EditStudioPage = () => {
                 <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Host Name
                 </label>
+
                 <input
                   type="text"
-                  value={studio.hostName}
+                  value={studio.hostName || ""}
                   readOnly
                   className="h-12 w-full rounded-xl border border-gray-200 bg-gray-100 px-4 text-sm text-gray-500 outline-none dark:border-gray-700 dark:bg-gray-800"
                 />
@@ -457,9 +509,10 @@ const EditStudioPage = () => {
                 <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Host Email
                 </label>
+
                 <input
                   type="email"
-                  value={studio.hostEmail}
+                  value={studio.hostEmail || ""}
                   readOnly
                   className="h-12 w-full rounded-xl border border-gray-200 bg-gray-100 px-4 text-sm text-gray-500 outline-none dark:border-gray-700 dark:bg-gray-800"
                 />
