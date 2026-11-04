@@ -11,8 +11,9 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
 
 type Booking = {
   _id: string;
@@ -65,7 +66,7 @@ const MyBookingsPage = () => {
           const errorData = await response.json().catch(() => null);
 
           throw new Error(
-            errorData?.message || "Failed to load bookings",
+            errorData?.message || "Failed to load bookings.",
           );
         }
 
@@ -112,7 +113,7 @@ const MyBookingsPage = () => {
           toast.error(
             error instanceof Error
               ? error.message
-              : "Failed to load bookings",
+              : "Failed to load bookings.",
           );
         }
       } finally {
@@ -164,7 +165,7 @@ const MyBookingsPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || "Failed to cancel booking");
+        toast.error(data.message || "Failed to cancel booking.");
         return;
       }
 

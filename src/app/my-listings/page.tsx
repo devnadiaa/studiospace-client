@@ -150,6 +150,7 @@ const MyListingsPage = () => {
       );
 
       setSelectedStudio(null);
+
       toast.success("Studio deleted successfully!");
     } catch {
       toast.error("Something went wrong. Please try again.");
@@ -287,71 +288,81 @@ const MyListingsPage = () => {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {studios.map((studio) => (
-              <div
-                key={studio._id}
-                className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900"
-              >
-                <div className="relative h-56">
-                  {studio.imageUrl ? (
-                    <img
-                      src={studio.imageUrl}
-                      alt={studio.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center bg-gray-100 text-sm text-gray-400 dark:bg-gray-800">
-                      Studio image unavailable
-                    </div>
-                  )}
+            {studios.map((studio) => {
+              const isBooked = bookedStudioIds.has(String(studio._id));
 
-                  <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-violet-600 shadow-sm">
-                    {studio.category}
-                  </span>
+              return (
+                <div
+                  key={studio._id}
+                  className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900"
+                >
+                  <div className="relative h-56">
+                    {studio.imageUrl ? (
+                      <img
+                        src={studio.imageUrl}
+                        alt={studio.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center bg-gray-100 text-sm text-gray-400 dark:bg-gray-800">
+                        Studio image unavailable
+                      </div>
+                    )}
 
-                  <span className="absolute right-4 top-4 rounded-full bg-green-100 px-3 py-1.5 text-xs font-semibold text-green-700">
-                    Available
-                  </span>
-                </div>
+                    <span className="absolute top-4 left-4 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-violet-600 shadow-sm">
+                      {studio.category}
+                    </span>
 
-                <div className="p-5">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    {studio.title}
-                  </h3>
-
-                  <p className="mt-3 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <MapPin size={16} className="text-violet-500" />
-                    {studio.address}, {studio.city}, {studio.country}
-                  </p>
-
-                  <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      <span className="text-xl font-bold text-gray-900 dark:text-white">
-                        ${studio.hourlyRate}
-                      </span>
-                      / hour
-                    </p>
-
-                    <Link
-                      href={`/studios/edit/${studio._id}`}
-                      className="flex items-center gap-1 text-sm font-semibold text-violet-600 transition hover:text-violet-700"
+                    <span
+                      className={`absolute top-4 right-4 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                        isBooked
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
                     >
-                      <Pencil size={15} />
-                      Update
-                    </Link>
+                      {isBooked ? "Booked" : "Available"}
+                    </span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setSelectedStudio(studio)}
-                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 py-2.5 text-sm font-semibold text-red-500 transition hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/30"
-                  >
-                    <Trash2 size={16} />
-                    Delete Listing
-                  </button>
+                  <div className="p-5">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                      {studio.title}
+                    </h3>
+
+                    <p className="mt-3 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <MapPin size={16} className="text-violet-500" />
+                      {studio.address}, {studio.city}, {studio.country}
+                    </p>
+
+                    <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <span className="text-xl font-bold text-gray-900 dark:text-white">
+                          ${studio.hourlyRate}
+                        </span>
+                        / hour
+                      </p>
+
+                      <Link
+                        href={`/studios/edit/${studio._id}`}
+                        className="flex items-center gap-1 text-sm font-semibold text-violet-600 transition hover:text-violet-700"
+                      >
+                        <Pencil size={15} />
+                        Update
+                      </Link>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStudio(studio)}
+                      className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 py-2.5 text-sm font-semibold text-red-500 transition hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/30"
+                    >
+                      <Trash2 size={16} />
+                      Delete Listing
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
