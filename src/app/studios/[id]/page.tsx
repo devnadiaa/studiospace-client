@@ -59,7 +59,9 @@ interface Review {
   createdAt: string;
 }
 
-const API_URL = "http://localhost:5000";
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
 
 const StudioDetailsPage = () => {
   const params = useParams<{ id: string }>();
@@ -735,9 +737,7 @@ const StudioDetailsPage = () => {
 
               <BookingModal
                 studioId={studio._id}
-                studioTitle={studio.title}
                 hourlyRate={studio.hourlyRate}
-                securityDeposit={studio.securityDeposit}
               />
 
               <div className="mt-5 flex gap-3 rounded-xl bg-violet-50 p-4 dark:bg-violet-500/10">
