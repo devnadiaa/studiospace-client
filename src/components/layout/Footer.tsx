@@ -18,22 +18,26 @@ const categories = [
 const socialLinks = [
   {
     name: "Facebook",
+    href: "https://www.facebook.com",
     icon: FaFacebookF,
     className: "bg-[#1877F2]",
   },
   {
     name: "Instagram",
+    href: "https://www.instagram.com",
     icon: FaInstagram,
     className:
       "bg-gradient-to-tr from-[#FCAF45] via-[#E1306C] to-[#833AB4]",
   },
   {
     name: "LinkedIn",
+    href: "https://www.linkedin.com",
     icon: FaLinkedinIn,
     className: "bg-[#0A66C2]",
   },
   {
     name: "X",
+    href: "https://x.com",
     icon: FaXTwitter,
     className: "bg-black dark:bg-white dark:text-black",
   },
@@ -62,15 +66,18 @@ const Footer = () => {
             </p>
 
             <div className="mt-7 flex items-center gap-3">
-              {socialLinks.map(({ name, icon: Icon, className }) => (
-                <span
+              {socialLinks.map(({ name, href, icon: Icon, className }) => (
+                <a
                   key={name}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={name}
                   title={name}
-                  className={`flex h-10 w-10 cursor-default items-center justify-center rounded-xl text-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md ${className}`}
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md ${className}`}
                 >
                   <Icon size={18} />
-                </span>
+                </a>
               ))}
             </div>
           </div>
