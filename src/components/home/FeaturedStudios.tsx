@@ -15,7 +15,8 @@ type Studio = {
 
 const FeaturedStudios = async () => {
   const backendUrl = (
-    process.env.BACKEND_URL || "http://localhost:5000"
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:5000"
   ).replace(/\/$/, "");
 
   let studios: Studio[] = [];
