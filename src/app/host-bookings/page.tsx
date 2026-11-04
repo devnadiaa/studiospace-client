@@ -258,22 +258,22 @@ const HostBookingsPage = () => {
     const value = normalizedStatus(status);
 
     if (value === "confirmed") {
-      return "bg-blue-50 text-blue-700 border-blue-200";
+      return "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300";
     }
 
     if (value === "completed") {
-      return "bg-green-50 text-green-700 border-green-200";
+      return "border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300";
     }
 
     if (value === "rejected") {
-      return "bg-red-50 text-red-700 border-red-200";
+      return "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300";
     }
 
     if (value === "cancelled") {
-      return "bg-gray-100 text-gray-600 border-gray-200";
+      return "border-gray-200 bg-gray-100 text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300";
     }
 
-    return "bg-yellow-50 text-yellow-700 border-yellow-200";
+    return "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300";
   };
 
   const filteredBookings = useMemo(() => {
@@ -325,79 +325,79 @@ const HostBookingsPage = () => {
   ];
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-gray-50 px-4 py-10 dark:bg-gray-950 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-violet-600">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">
               Host Dashboard
             </p>
 
-            <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
               Booking Requests
             </h1>
 
-            <p className="mt-2 text-gray-500">
+            <p className="mt-2 text-gray-500 dark:text-gray-400">
               Manage your studio reservations and booking requests.
             </p>
           </div>
 
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:border-violet-300 hover:text-violet-600"
+            className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:border-violet-300 hover:text-violet-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-violet-500 dark:hover:text-violet-400"
           >
             Back to Dashboard
           </Link>
         </div>
 
         <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <p className="text-sm font-medium text-gray-500">
+          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
               Total Bookings
             </p>
 
-            <p className="mt-3 text-3xl font-bold text-gray-900">
+            <p className="mt-3 text-3xl font-bold text-gray-900 dark:text-white">
               {bookings.length}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <p className="text-sm font-medium text-gray-500">
+          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
               Pending Requests
             </p>
 
-            <p className="mt-3 text-3xl font-bold text-yellow-600">
+            <p className="mt-3 text-3xl font-bold text-yellow-600 dark:text-yellow-400">
               {pendingCount}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <p className="text-sm font-medium text-gray-500">
+          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
               Confirmed Bookings
             </p>
 
-            <p className="mt-3 text-3xl font-bold text-blue-600">
+            <p className="mt-3 text-3xl font-bold text-blue-600 dark:text-blue-400">
               {confirmedCount}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <p className="text-sm font-medium text-gray-500">
+          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
               Completed Bookings
             </p>
 
-            <p className="mt-3 text-3xl font-bold text-green-600">
+            <p className="mt-3 text-3xl font-bold text-green-600 dark:text-green-400">
               {completedCount}
             </p>
           </div>
         </div>
 
-        <div className="mb-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">
+        <div className="mb-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
             Confirmed & Completed Booking Value
           </p>
 
-          <p className="mt-2 text-3xl font-bold text-gray-900">
+          <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
             ${totalEarnings.toFixed(2)}
           </p>
         </div>
@@ -410,7 +410,7 @@ const HostBookingsPage = () => {
               className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${
                 activeFilter === filter
                   ? "bg-violet-600 text-white shadow-md"
-                  : "border border-gray-200 bg-white text-gray-600 hover:border-violet-300 hover:text-violet-600"
+                  : "border border-gray-200 bg-white text-gray-600 hover:border-violet-300 hover:text-violet-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-violet-500 dark:hover:text-violet-400"
               }`}
             >
               {filter}
@@ -419,24 +419,24 @@ const HostBookingsPage = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex min-h-72 items-center justify-center rounded-2xl bg-white">
+          <div className="flex min-h-72 items-center justify-center rounded-2xl bg-white dark:bg-gray-900">
             <div className="text-center">
-              <LoaderCircle className="mx-auto h-10 w-10 animate-spin text-violet-600" />
+              <LoaderCircle className="mx-auto h-10 w-10 animate-spin text-violet-600 dark:text-violet-400" />
 
-              <p className="mt-4 text-sm text-gray-500">
+              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
                 Loading booking requests...
               </p>
             </div>
           </div>
         ) : filteredBookings.length === 0 ? (
-          <div className="rounded-2xl border border-gray-100 bg-white px-6 py-20 text-center shadow-sm">
-            <CalendarDays className="mx-auto h-12 w-12 text-gray-300" />
+          <div className="rounded-2xl border border-gray-100 bg-white px-6 py-20 text-center shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <CalendarDays className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" />
 
-            <h2 className="mt-4 text-xl font-bold text-gray-800">
+            <h2 className="mt-4 text-xl font-bold text-gray-800 dark:text-white">
               No Booking Requests Found
             </h2>
 
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
               There are no {activeFilter.toLowerCase()} bookings to display.
             </p>
 
@@ -462,10 +462,10 @@ const HostBookingsPage = () => {
               return (
                 <article
                   key={booking._id}
-                  className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md"
+                  className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md dark:border-gray-800 dark:bg-gray-900 dark:hover:shadow-black/20"
                 >
                   <div className="grid grid-cols-1 gap-5 p-5 md:grid-cols-[220px_1fr] md:p-6">
-                    <div className="relative h-48 overflow-hidden rounded-xl bg-gray-100 md:h-full md:min-h-48">
+                    <div className="relative h-48 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 md:h-full md:min-h-48">
                       {studioImage ? (
                         <img
                           src={studioImage}
@@ -473,7 +473,7 @@ const HostBookingsPage = () => {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="flex h-full min-h-48 flex-col items-center justify-center text-gray-400">
+                        <div className="flex h-full min-h-48 flex-col items-center justify-center text-gray-400 dark:text-gray-500">
                           <ImageIcon className="h-10 w-10" />
 
                           <span className="mt-2 text-xs">
@@ -486,11 +486,11 @@ const HostBookingsPage = () => {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <h2 className="text-xl font-bold text-gray-900">
+                          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                             {getStudioName(booking)}
                           </h2>
 
-                          <p className="mt-1 text-xs text-gray-400">
+                          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                             Booking ID: {booking._id.slice(-8)}
                           </p>
                         </div>
@@ -506,26 +506,26 @@ const HostBookingsPage = () => {
 
                       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
                             Customer
                           </p>
 
-                          <p className="mt-1 font-semibold text-gray-800">
+                          <p className="mt-1 font-semibold text-gray-800 dark:text-gray-200">
                             {getCustomerName(booking)}
                           </p>
 
-                          <p className="mt-1 break-all text-sm text-gray-500">
+                          <p className="mt-1 break-all text-sm text-gray-500 dark:text-gray-400">
                             {getCustomerEmail(booking)}
                           </p>
                         </div>
 
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
                             Booking Date
                           </p>
 
-                          <p className="mt-2 flex items-center gap-2 text-sm font-medium text-gray-700">
-                            <CalendarDays className="h-4 w-4 text-violet-500" />
+                          <p className="mt-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <CalendarDays className="h-4 w-4 text-violet-500 dark:text-violet-400" />
 
                             {new Date(
                               `${booking.bookingDate}T00:00:00`,
@@ -538,24 +538,24 @@ const HostBookingsPage = () => {
                         </div>
 
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
                             Booking Time
                           </p>
 
-                          <p className="mt-2 flex items-center gap-2 text-sm font-medium text-gray-700">
-                            <Clock3 className="h-4 w-4 text-violet-500" />
+                          <p className="mt-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <Clock3 className="h-4 w-4 text-violet-500 dark:text-violet-400" />
 
                             {booking.startTime} - {booking.endTime}
                           </p>
                         </div>
 
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
                             Studio Location
                           </p>
 
-                          <p className="mt-2 flex items-center gap-2 text-sm font-medium text-gray-700">
-                            <MapPin className="h-4 w-4 text-violet-500" />
+                          <p className="mt-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <MapPin className="h-4 w-4 text-violet-500 dark:text-violet-400" />
 
                             {[
                               booking.studio?.address,
@@ -567,13 +567,13 @@ const HostBookingsPage = () => {
                         </div>
                       </div>
 
-                      <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-5">
+                      <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-5 dark:border-gray-800">
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
                             Total Price
                           </p>
 
-                          <p className="mt-1 text-2xl font-bold text-violet-600">
+                          <p className="mt-1 text-2xl font-bold text-violet-600 dark:text-violet-400">
                             ${Number(booking.totalPrice || 0).toFixed(2)}
                           </p>
                         </div>
@@ -608,7 +608,7 @@ const HostBookingsPage = () => {
                                   )
                                 }
                                 disabled={isProcessing}
-                                className="inline-flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                                className="inline-flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
                               >
                                 <XCircle className="h-4 w-4" />
 
@@ -639,7 +639,7 @@ const HostBookingsPage = () => {
                           )}
 
                           {status === "completed" && (
-                            <span className="inline-flex items-center gap-2 rounded-xl bg-green-50 px-4 py-2.5 text-sm font-semibold text-green-700">
+                            <span className="inline-flex items-center gap-2 rounded-xl bg-green-50 px-4 py-2.5 text-sm font-semibold text-green-700 dark:bg-green-950 dark:text-green-300">
                               <CheckCircle2 className="h-4 w-4" />
 
                               Booking Completed
@@ -647,7 +647,7 @@ const HostBookingsPage = () => {
                           )}
 
                           {status === "rejected" && (
-                            <span className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600">
+                            <span className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 dark:bg-red-950 dark:text-red-300">
                               <XCircle className="h-4 w-4" />
 
                               Booking Rejected
@@ -655,7 +655,7 @@ const HostBookingsPage = () => {
                           )}
 
                           {status === "cancelled" && (
-                            <span className="rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-600">
+                            <span className="rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">
                               Booking Cancelled
                             </span>
                           )}

@@ -149,19 +149,18 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/95">
-      <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-600 text-white">
-            <Aperture size={25} />
+      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 sm:h-20 sm:px-6 lg:px-8">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 text-white sm:h-11 sm:w-11">
+            <Aperture size={23} className="sm:hidden" />
+            <Aperture size={25} className="hidden sm:block" />
           </span>
 
-          <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+          <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
             Studio<span className="text-violet-600">Space.</span>
           </span>
         </Link>
 
-        {/* Desktop Navigation */}
         <div className="hidden items-center gap-8 lg:flex">
           {navLinks.map((link) => (
             <Link
@@ -182,7 +181,6 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* Desktop Actions */}
         <div className="hidden items-center gap-3 lg:flex">
           <button
             type="button"
@@ -287,18 +285,17 @@ const Navbar = () => {
             ))}
         </div>
 
-        {/* Mobile Actions */}
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
           <button
             type="button"
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 sm:h-10 sm:w-10"
           >
             {mounted && theme === "dark" ? (
-              <Sun size={20} />
+              <Sun size={19} />
             ) : (
-              <Moon size={20} />
+              <Moon size={19} />
             )}
           </button>
 
@@ -307,16 +304,15 @@ const Navbar = () => {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMenuOpen}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 sm:h-10 sm:w-10"
           >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </nav>
 
-      {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="border-t border-gray-100 bg-white px-5 py-5 shadow-lg dark:border-gray-800 dark:bg-gray-950 lg:hidden">
+        <div className="border-t border-gray-100 bg-white px-6 py-5 shadow-lg dark:border-gray-800 dark:bg-gray-950 lg:hidden">
           <div className="flex flex-col gap-2">
             {navLinks.map((link) => (
               <Link
@@ -337,8 +333,8 @@ const Navbar = () => {
               <div className="mt-3 border-t border-gray-100 pt-4 dark:border-gray-800">
                 {user ? (
                   <>
-                    <div className="mb-4 flex items-center gap-3 px-3">
-                      <UserAvatar size={42} />
+                    <div className="mb-4 flex items-center gap-3 px-2">
+                      <UserAvatar size={40} />
 
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">

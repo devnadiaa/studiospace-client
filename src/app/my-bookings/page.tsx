@@ -42,10 +42,20 @@ const MyBookingsPage = () => {
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+    let isFetching = false;
+
     const fetchBookings = async () => {
+      if (isFetching) {
+        return;
+      }
+
+      isFetching = true;
+
       try {
         const response = await fetch("http://localhost:5000/bookings", {
           credentials: "include",
+          cache: "no-store",
         });
 
         if (response.ok === false) {
@@ -61,6 +71,7 @@ const MyBookingsPage = () => {
                 `http://localhost:5000/studios/${booking.studioId}`,
                 {
                   credentials: "include",
+                  cache: "no-store",
                 },
               );
 
@@ -86,15 +97,44 @@ const MyBookingsPage = () => {
           }),
         );
 
-        setBookings(bookingsWithStudios);
+        if (isMounted) {
+          setBookings(bookingsWithStudios);
+        }
       } catch {
-        toast.error("Failed to load bookings");
+        if (isMounted) {
+          toast.error("Failed to load bookings");
+        }
       } finally {
-        setIsLoading(false);
+        isFetching = false;
+
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchBookings();
+
+    const intervalId = setInterval(() => {
+      fetchBookings();
+    }, 10000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchBookings();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange,
+      );
+    };
   }, []);
 
   const handleCancelBooking = async (bookingId: string) => {
@@ -282,7 +322,7 @@ const MyBookingsPage = () => {
             </h2>
 
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              You haven't booked any creative spaces yet.
+              You haven&apos;t booked any creative spaces yet.
             </p>
 
             <Link

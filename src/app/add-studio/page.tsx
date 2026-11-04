@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+
 import {
   ArrowLeft,
   MapPin,
@@ -17,6 +18,7 @@ import {
   Image as ImageIcon,
   X,
 } from "lucide-react";
+
 import { authClient } from "@/lib/auth-client";
 
 const amenities = [
@@ -37,12 +39,17 @@ const API_URL = (
 ).replace(/\/$/, "");
 
 const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+
 const MAX_IMAGES = 6;
 
 const AddStudioPage = () => {
   const router = useRouter();
+
   const { data: session, isPending } = authClient.useSession();
+
   const user = session?.user;
+
+  const redirectingRef = useRef(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -50,15 +57,19 @@ const AddStudioPage = () => {
   const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
-    if (isPending) {
+    if (isPending || user) {
       return;
     }
 
-    if (user === undefined || user === null) {
-      toast.info("Please login to publish a studio.");
-      router.replace("/login?callbackURL=%2Fadd-studio");
+    if (redirectingRef.current) {
+      return;
     }
-  }, [isPending, user?.id, router]);
+
+    redirectingRef.current = true;
+
+    toast.info("Please login to publish a studio.");
+    router.replace("/login?callbackURL=%2Fadd-studio");
+  }, [isPending, user, router]);
 
   useEffect(() => {
     return () => {
@@ -82,8 +93,7 @@ const AddStudioPage = () => {
     }
 
     const invalidFile = files.find(
-      (file) =>
-        file.type !== "image/png" && file.type !== "image/jpeg"
+      (file) => file.type !== "image/png" && file.type !== "image/jpeg"
     );
 
     if (invalidFile) {
@@ -128,6 +138,7 @@ const AddStudioPage = () => {
     }
 
     const uploadData = new FormData();
+
     uploadData.append("image", file);
 
     const response = await fetch(
@@ -241,6 +252,7 @@ const AddStudioPage = () => {
       toast.success("Studio published successfully!");
 
       form.reset();
+
       setSelectedFiles([]);
       setPreviewUrls([]);
       setImageUrl("");
