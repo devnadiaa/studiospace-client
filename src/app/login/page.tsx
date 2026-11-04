@@ -8,12 +8,12 @@ import {
   Lock,
   Mail,
 } from "lucide-react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { authClient } from "@/lib/auth-client";
 
-const LoginPage = () => {
+const LoginContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -242,6 +242,22 @@ const LoginPage = () => {
         </div>
       </div>
     </section>
+  );
+};
+
+const LoginPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Loading login...
+          </p>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 };
 
