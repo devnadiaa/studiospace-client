@@ -1,16 +1,54 @@
-# StudioSpace — Creative Workspace & Production Studio Sharing Platform
+<div align="center">
+
+# 🎬 StudioSpace
+
+### Creative Workspace & Production Studio Marketplace
 
 **Your Space. Your Creative Freedom.**
+
+A platform connecting creative professionals with studio owners to discover, explore, and book inspiring creative spaces.
+
+<br />
+
+<a href="https://studiospace-client-chi.vercel.app/">
+  <img src="https://img.shields.io/badge/🌐_Visit_Live_Website-6C4CE8?style=for-the-badge" alt="Live Website" />
+</a>
+
+<br /><br />
+
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge\&logo=next.js\&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge\&logo=react\&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge\&logo=typescript\&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge\&logo=tailwindcss\&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge\&logo=nodedotjs\&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge\&logo=express\&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge\&logo=mongodb\&logoColor=white)
+
+</div>
+
+
+
+## 📖 Table of Contents
+
+* [Project Overview](#-project-overview)
+* [Main Features](#-main-features)
+* [User Roles](#-user-roles)
+* [Studio Categories](#-studio-categories)
+* [Technology Stack](#️-technology-stack)
+* [Project Architecture](#-project-architecture)
+* [Project Repositories](#-project-repositories)
+* [Local Installation & Setup](#️-local-installation--setup)
+* [Examiner Test Credentials](#-examiner-test-credentials)
+* [Deployment Links](#-deployment-links)
+* [Developer](#-developer)
+
+
+
+## 📌 Project Overview
 
 StudioSpace is a peer-to-peer creative workspace and production studio-sharing platform. It connects creators with studio owners and helps people discover, explore, and book creative spaces for their projects.
 
 Whether someone needs a photography studio, podcast room, music suite, film stage, or workshop space, StudioSpace makes it easier to find a suitable creative environment.
-
-## 🌐 Live Website
-
-**Live Site:** https://studiospace-client-chi.vercel.app/
-
-## 📌 Project Overview
 
 StudioSpace is designed for two main types of users:
 
@@ -103,12 +141,43 @@ StudioSpace supports different types of creative spaces:
 
 * Vercel
 
+## 🏗️ Project Architecture
+
+StudioSpace uses a separate frontend and backend architecture.
+
+### Client Application
+
+The client application handles:
+
+* User interface and navigation.
+* Studio browsing and details.
+* Registration and login pages.
+* Customer and host dashboards.
+* Booking forms and booking management.
+* API requests to the backend server.
+
+### Server Application
+
+The backend application handles:
+
+* API endpoints.
+* MongoDB database operations.
+* Authentication and session verification.
+* Studio listing management.
+* Booking creation and status management.
+* Review operations.
+* Access control for protected resources.
+
+The client communicates with the server through API requests.
+
 ## 📂 Project Repositories
 
 **Frontend Repository:**
+
 https://github.com/devnadiaa/studiospace-client
 
 **Backend Repository:**
+
 https://github.com/devnadiaa/studiospace-server
 
 ## ⚙️ Local Installation & Setup
@@ -125,97 +194,108 @@ Before starting, make sure you have:
 * A MongoDB Atlas account.
 * Required authentication and image-hosting credentials.
 
-### Step 1: Clone the Frontend Repository
+### Frontend Setup
 
-```bash
+#### Step 1: Clone the Frontend Repository
+
+
 git clone https://github.com/devnadiaa/studiospace-client.git
-```
 
-### Step 2: Open the Frontend Folder
 
-```bash
+#### Step 2: Open the Frontend Folder
+
+
 cd studiospace-client
-```
 
-### Step 3: Install Frontend Dependencies
 
-```bash
+#### Step 3: Install Frontend Dependencies
+
+
 npm install
-```
 
-### Step 4: Configure Frontend Environment Variables
+
+#### Step 4: Configure Frontend Environment Variables
 
 Create a `.env.local` file in the frontend root directory.
 
 Add the following variables:
 
-```env
+
 NEXT_PUBLIC_API_URL=http://localhost:5000
 NEXT_PUBLIC_IMGBB_API_KEY=your_imgbb_api_key
-```
 
 Replace the placeholder with your own ImgBB API key.
 
-### Step 5: Clone the Backend Repository
+### Backend Setup
+
+#### Step 5: Clone the Backend Repository
 
 Open another terminal and run:
 
-```bash
+
 git clone https://github.com/devnadiaa/studiospace-server.git
-```
 
-### Step 6: Open the Backend Folder
 
-```bash
+#### Step 6: Open the Backend Folder
+
+
 cd studiospace-server
-```
 
-### Step 7: Install Backend Dependencies
 
-```bash
+#### Step 7: Install Backend Dependencies
+
+
 npm install
-```
 
-### Step 8: Configure Backend Environment Variables
+
+#### Step 8: Configure Backend Environment Variables
 
 Create a `.env` file in the backend root directory.
 
 Add the following variables:
 
-```env
+
 PORT=5000
+
 DB_USER=your_mongodb_username
 DB_PASS=your_mongodb_password
+
 BETTER_AUTH_SECRET=your_auth_secret
 BETTER_AUTH_URL=http://localhost:5000
+
 CLIENT_URL=http://localhost:3000
+
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
-```
+
 
 Replace the placeholder values with your own credentials.
 
-### Step 9: Start the Backend Server
+#### Step 9: Start the Backend Server
 
-```bash
+
 npm run dev
-```
+
 
 The backend server should run on:
 
+
 http://localhost:5000
 
-### Step 10: Start the Frontend Application
+
+#### Step 10: Start the Frontend Application
 
 Go to the frontend terminal and run:
 
-```bash
+
 npm run dev
-```
+
 
 The frontend application should run on:
 
+
 http://localhost:3000
+
 
 Now open your browser and visit:
 
@@ -223,33 +303,61 @@ http://localhost:3000
 
 StudioSpace is ready to explore locally.
 
+**Note:** Both the frontend and backend applications must be running to use the complete application locally.
+
 ## 🔑 Examiner Test Credentials
 
-Examiners can create an account through the registration page and use it to explore the platform.
+The following demo accounts are available for testing the platform.
 
-A dedicated demo account can also be provided:
+### Host Account
 
-* **Email:** `REPLACE_WITH_DEMO_EMAIL`
-* **Password:** `REPLACE_WITH_DEMO_PASSWORD`
+| Information | Credentials                           |
+| ----------- | ------------------------------------- |
+| Name        | Host                                  |
+| Email       | [host@test.com](mailto:host@test.com) |
+| Password    | Hosttest@123                          |
 
-**Note:** Replace these placeholders with a real, working demo account before submitting the project. Do not publish your personal account password.
+### Customer Account
+
+| Information | Credentials                                   |
+| ----------- | --------------------------------------------- |
+| Name        | Customer                                      |
+| Email       | [customer@test.com](mailto:customer@test.com) |
+| Password    | Customertest@123                              |
+
+**Note:** These are dedicated testing accounts. Please use them only for evaluating the StudioSpace platform.
 
 ## 🚀 Deployment Links
 
-* **Frontend Live Website:** https://studiospace-client-chi.vercel.app/
-* **Backend API:** https://studiospace-server-pi.vercel.app/
-* **Frontend GitHub:** https://github.com/devnadiaa/studiospace-client
-* **Backend GitHub:** https://github.com/devnadiaa/studiospace-server
+| Resource              | Link                                            |
+| --------------------- | ----------------------------------------------- |
+| Frontend Live Website | https://studiospace-client-chi.vercel.app/      |
+| Backend API           | https://studiospace-server-pi.vercel.app/       |
+| Frontend GitHub       | https://github.com/devnadiaa/studiospace-client |
+| Backend GitHub        | https://github.com/devnadiaa/studiospace-server |
 
 ## 👩‍💻 Developer
 
-**Nadia Akter**
+<div align="center">
 
-Full Stack Web Developer in Training
+### Nadia Akter
 
-* GitHub: https://github.com/devnadiaa
-* LinkedIn: https://linkedin.com/in/nadia-akter-662992442/
+**Full Stack Web Developer in Training**
 
----
+[![GitHub](https://img.shields.io/badge/GitHub-devnadiaa-181717?style=for-the-badge\&logo=github)](https://github.com/devnadiaa)
 
-**StudioSpace — Find Your Space. Create Your Vision.**
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Nadia_Akter-0A66C2?style=for-the-badge\&logo=linkedin)](https://linkedin.com/in/nadia-akter-662992442/)
+
+</div>
+
+
+
+<div align="center">
+
+### 🎬 StudioSpace
+
+**Find Your Space. Create Your Vision.**
+
+*Built for creators. Designed for creativity.*
+
+</div>
