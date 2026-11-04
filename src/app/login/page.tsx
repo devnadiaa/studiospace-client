@@ -68,7 +68,7 @@ const LoginContent = () => {
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: redirectPath,
+        callbackURL: `${window.location.origin}${redirectPath}`,
       });
 
       if (error) {
