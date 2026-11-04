@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 type Booking = {
   _id: string;
   studioId: string;
@@ -53,13 +56,17 @@ const MyBookingsPage = () => {
       isFetching = true;
 
       try {
-        const response = await fetch("http://localhost:5000/bookings", {
+        const response = await fetch(`${API_URL}/bookings`, {
           credentials: "include",
           cache: "no-store",
         });
 
-        if (response.ok === false) {
-          throw new Error("Failed to load bookings");
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+
+          throw new Error(
+            errorData?.message || "Failed to load bookings",
+          );
         }
 
         const data: Booking[] = await response.json();
@@ -68,14 +75,14 @@ const MyBookingsPage = () => {
           data.map(async (booking) => {
             try {
               const studioResponse = await fetch(
-                `http://localhost:5000/studios/${booking.studioId}`,
+                `${API_URL}/studios/${booking.studioId}`,
                 {
                   credentials: "include",
                   cache: "no-store",
                 },
               );
 
-              if (studioResponse.ok === false) {
+              if (!studioResponse.ok) {
                 return {
                   ...booking,
                   studio: null,
@@ -100,9 +107,13 @@ const MyBookingsPage = () => {
         if (isMounted) {
           setBookings(bookingsWithStudios);
         }
-      } catch {
+      } catch (error) {
         if (isMounted) {
-          toast.error("Failed to load bookings");
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to load bookings",
+          );
         }
       } finally {
         isFetching = false;
@@ -130,6 +141,7 @@ const MyBookingsPage = () => {
     return () => {
       isMounted = false;
       clearInterval(intervalId);
+
       document.removeEventListener(
         "visibilitychange",
         handleVisibilityChange,
@@ -142,7 +154,7 @@ const MyBookingsPage = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/bookings/${bookingId}/cancel`,
+        `${API_URL}/bookings/${bookingId}/cancel`,
         {
           method: "PATCH",
           credentials: "include",
@@ -151,7 +163,7 @@ const MyBookingsPage = () => {
 
       const data = await response.json();
 
-      if (response.ok === false) {
+      if (!response.ok) {
         toast.error(data.message || "Failed to cancel booking");
         return;
       }
@@ -201,14 +213,19 @@ const MyBookingsPage = () => {
     switch (status.toLowerCase()) {
       case "pending":
         return "bg-amber-50 text-amber-600 dark:bg-amber-950/40";
+
       case "confirmed":
         return "bg-blue-50 text-blue-600 dark:bg-blue-950/40";
+
       case "completed":
         return "bg-green-50 text-green-600 dark:bg-green-950/40";
+
       case "cancelled":
         return "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300";
+
       case "rejected":
         return "bg-red-50 text-red-600 dark:bg-red-950/40";
+
       default:
         return "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300";
     }
@@ -376,6 +393,7 @@ const MyBookingsPage = () => {
                       <div className="mt-3 flex flex-wrap gap-x-5 gap-y-3 text-sm text-gray-500 dark:text-gray-400">
                         <span className="flex items-center gap-2">
                           <MapPin size={16} />
+
                           {booking.studio
                             ? `${booking.studio.address}, ${booking.studio.city}, ${booking.studio.country}`
                             : "Location unavailable"}
@@ -383,11 +401,13 @@ const MyBookingsPage = () => {
 
                         <span className="flex items-center gap-2">
                           <CalendarDays size={16} />
+
                           {formatBookingDate(booking.bookingDate)}
                         </span>
 
                         <span className="flex items-center gap-2">
                           <Clock3 size={16} />
+
                           {getBookingHours(
                             booking.startTime,
                             booking.endTime,
@@ -415,6 +435,7 @@ const MyBookingsPage = () => {
                           className="flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900 dark:hover:bg-red-950/30"
                         >
                           <X size={16} />
+
                           {cancellingId === booking._id
                             ? "Cancelling..."
                             : "Cancel Booking"}
