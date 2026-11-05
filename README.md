@@ -26,8 +26,6 @@ A platform connecting creative professionals with studio owners to discover, exp
 
 </div>
 
-
-
 ## 📖 Table of Contents
 
 * [Project Overview](#-project-overview)
@@ -41,8 +39,6 @@ A platform connecting creative professionals with studio owners to discover, exp
 * [Examiner Test Credentials](#-examiner-test-credentials)
 * [Deployment Links](#-deployment-links)
 * [Developer](#-developer)
-
-
 
 ## 📌 Project Overview
 
@@ -63,7 +59,7 @@ The platform provides a simple way for customers to explore studios and for host
 * **User Login:** Registered users can securely log in.
 * **Google Authentication:** Users can sign in with their Google account.
 * **Studio Discovery:** Users can explore available creative studios.
-* **Studio Categories:** Studios are organized into categories such as Photography, Sound Stage, Podcast Room, Music Suite, and Art Workshop.
+* **Studio Categories:** Studios are organized into different creative categories.
 * **Studio Details:** Users can view studio information, images, descriptions, locations, and pricing.
 * **Studio Gallery:** Users can explore studio images.
 * **Add Studio:** Hosts can add their own creative spaces to the platform.
@@ -97,13 +93,14 @@ Hosts can:
 
 ## 🏢 Studio Categories
 
-StudioSpace supports different types of creative spaces:
+StudioSpace supports six types of creative spaces:
 
-1. **Photo Studios** — Professional spaces for photography and portraits.
-2. **Sound Stages** — Spacious stages for film and video production.
-3. **Podcast Rooms** — Recording spaces for podcast creators.
-4. **Music Suites** — Creative spaces for music and audio production.
-5. **Art Workshops** — Inspiring spaces for art and creative projects.
+1. **Photo Studio** — Professional spaces for photography and portraits.
+2. **Film Stage** — Spacious stages for film and video production.
+3. **Podcast Lounge** — Recording spaces for podcast creators.
+4. **Music Suite** — Creative spaces for music and audio production.
+5. **Workshop** — Inspiring spaces for art and creative projects.
+6. **Sound Stage** — Professional spaces for sound and video production.
 
 ## 🛠️ Technology Stack
 
@@ -198,21 +195,21 @@ Before starting, make sure you have:
 
 #### Step 1: Clone the Frontend Repository
 
-
+```bash
 git clone https://github.com/devnadiaa/studiospace-client.git
-
+```
 
 #### Step 2: Open the Frontend Folder
 
-
+```bash
 cd studiospace-client
-
+```
 
 #### Step 3: Install Frontend Dependencies
 
-
+```bash
 npm install
-
+```
 
 #### Step 4: Configure Frontend Environment Variables
 
@@ -220,9 +217,10 @@ Create a `.env.local` file in the frontend root directory.
 
 Add the following variables:
 
-
+```env
 NEXT_PUBLIC_API_URL=http://localhost:5000
 NEXT_PUBLIC_IMGBB_API_KEY=your_imgbb_api_key
+```
 
 Replace the placeholder with your own ImgBB API key.
 
@@ -232,21 +230,21 @@ Replace the placeholder with your own ImgBB API key.
 
 Open another terminal and run:
 
-
+```bash
 git clone https://github.com/devnadiaa/studiospace-server.git
-
+```
 
 #### Step 6: Open the Backend Folder
 
-
+```bash
 cd studiospace-server
-
+```
 
 #### Step 7: Install Backend Dependencies
 
-
+```bash
 npm install
-
+```
 
 #### Step 8: Configure Backend Environment Variables
 
@@ -254,7 +252,7 @@ Create a `.env` file in the backend root directory.
 
 Add the following variables:
 
-
+```env
 PORT=5000
 
 DB_USER=your_mongodb_username
@@ -262,40 +260,35 @@ DB_PASS=your_mongodb_password
 
 BETTER_AUTH_SECRET=your_auth_secret
 BETTER_AUTH_URL=http://localhost:5000
-
 CLIENT_URL=http://localhost:3000
 
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
-
+```
 
 Replace the placeholder values with your own credentials.
 
 #### Step 9: Start the Backend Server
 
-
+```bash
 npm run dev
-
+```
 
 The backend server should run on:
 
-
 http://localhost:5000
-
 
 #### Step 10: Start the Frontend Application
 
 Go to the frontend terminal and run:
 
-
+```bash
 npm run dev
-
+```
 
 The frontend application should run on:
 
-
 http://localhost:3000
-
 
 Now open your browser and visit:
 
@@ -313,7 +306,6 @@ The following demo accounts are available for testing the platform.
 
 | Information | Credentials                           |
 | ----------- | ------------------------------------- |
-| Name        | Host                                  |
 | Email       | [host@test.com](mailto:host@test.com) |
 | Password    | Hosttest@123                          |
 
@@ -321,7 +313,6 @@ The following demo accounts are available for testing the platform.
 
 | Information | Credentials                                   |
 | ----------- | --------------------------------------------- |
-| Name        | Customer                                      |
 | Email       | [customer@test.com](mailto:customer@test.com) |
 | Password    | Customertest@123                              |
 
@@ -349,8 +340,6 @@ The following demo accounts are available for testing the platform.
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Nadia_Akter-0A66C2?style=for-the-badge\&logo=linkedin)](https://linkedin.com/in/nadia-akter-662992442/)
 
 </div>
-
-
 
 <div align="center">
 
