@@ -67,6 +67,19 @@ The platform provides a simple way for customers to explore studios and for host
 * **Studio Booking:** Customers can submit booking requests for their preferred studios.
 * **Booking Management:** Users can manage their booking information.
 * **Protected Routes:** Important pages and actions require user authentication.
+* **Studio Search & Filtering:** Users can search and filter studios based on their preferences.
+* **Booking Status Management:** Users can track booking statuses, including Pending, Confirmed, Rejected, and Cancelled.
+* **Booking Cancellation:** Customers can cancel their booking requests.
+* **Double Booking Prevention:** The system prevents overlapping bookings for the same studio and time slot.
+* **Studio Amenities:** Users can explore available amenities and facilities on studio details pages.
+* **Reviews & Ratings:** Users can view studio reviews and ratings, and submit their own ratings and feedback after their booking has been successfully completed.
+* **Hero Slider:** A three-slide hero slider highlights creative spaces and platform features.
+* **Featured Studios:** Users can explore selected featured studio listings.
+* **Dark & Light Theme:** Users can switch between dark and light themes.
+* **Loading States & 404 Page:** The platform provides loading indicators and a custom not-found page.
+* **Toast Notifications:** Users receive notifications for important actions and operations.
+* **Responsive Design:** The platform works across mobile, tablet, and desktop devices.
+* **Profile Menu & User Dropdown:** Users can access their profile and account-related options through the dropdown menu.
 
 ## 👥 User Roles
 
@@ -219,6 +232,7 @@ Add the following variables:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000
+
 NEXT_PUBLIC_IMGBB_API_KEY=your_imgbb_api_key
 ```
 
@@ -256,13 +270,17 @@ Add the following variables:
 PORT=5000
 
 DB_USER=your_mongodb_username
+
 DB_PASS=your_mongodb_password
 
 BETTER_AUTH_SECRET=your_auth_secret
+
 BETTER_AUTH_URL=http://localhost:5000
+
 CLIENT_URL=http://localhost:3000
 
 GOOGLE_CLIENT_ID=your_google_client_id
+
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
